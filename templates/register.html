@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+
+{% block content %}
+
+<h1>Register</h1>
+
+<form action="/register-success" method="POST">
+	<label>Please enter a username (must be between 1 and 20 characters, 
+		only contain valid characters without spaces, and be unique from 
+		existing users):</label><br>
+	<input type="text" name="username"><br><br>
+	<label>Please enter a password (must be between 8 and 20 characters and 
+		only contain valid characters without spaces):</label><br>
+	<input type="password" name="password"><br><br>
+	<label>Would you like your updates to be public (visible to any user)
+		or private (visible to only users you have approved):</label><br>
+	<input type="radio" name="is_public" value="1">Public<br>
+	<input type="radio" name="is_public" value="2">Private<br><br>
+	<input type="submit">
+
+</form>
+
+{% endblock %}

@@ -16,7 +16,7 @@ class User(db.Model):
 	username = db.Column(db.String(20), nullable=False, unique=True)
 	password = db.Column(db.String(20), nullable=False)
 	joined_at = db.Column(db.DateTime, nullable=False)
-	is_public = db.Column(db.Boolean, default=False)
+	is_public = db.Column(db.Boolean, nullable=False)
 	#profile_picture
 	#user_preferences ? 
 
