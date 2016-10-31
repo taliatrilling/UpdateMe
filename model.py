@@ -2,6 +2,8 @@
 
 from flask_sqlalchemy import SQLAlchemy 
 
+from datetime import datetime
+
 db = SQLAlchemy()
 
 
@@ -14,7 +16,7 @@ class User(db.Model):
 	username = db.Column(db.String(20), nullable=False, unique=True)
 	password = db.Column(db.String(20), nullable=False)
 	joined_at = db.Column(db.DateTime, nullable=False)
-	is_public = db.Column(db.Boolean, nullable=False)
+	is_public = db.Column(db.Boolean, default=False)
 	#profile_picture
 	#user_preferences ? 
 
@@ -51,19 +53,22 @@ class Update(db.Model):
 # 	__tablename__ = "permission" 
 
 
-def connect_to_db(app, uri=" "):
+def connect_to_db(app):
 	"""Connects the PostgreSQL database to the Flask app, defaults to use the 
 	primary DB, but allows for a different argument to be passed in for 
 	testing purposes"""
 
-	app.config["SQLALCHEMY_DATEBASE_URI"] = uri 
+	#uri="postgresql:///twitterclone"
+	# app.config["SQLALCHEMY_DATEBASE_URI"] = uri 
+	app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql:///twitterclone"
 	db.app = app
 	db.init_app(app)
 
 if __name__ == '__main__':
 	from server import app 
 	connect_to_db(app)
-	print "Now connected to DB"
+	db.create_all()
+
 
 
 
