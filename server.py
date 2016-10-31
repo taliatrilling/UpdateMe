@@ -43,13 +43,15 @@ def add_user(username, password, is_public):
 def check_user_credentials(username, password):
 	"""Checks the validity of a username and password"""
 
-	if not User.query.filter(username == username, password == password).first():
-		flash("Your username or password was invalid, please try again.")
-	else:
+	if User.query.filter(User.username == username, User.password == password).first():
 		user = User.query.filter(username == username, password == password).first()
 		user_id = user.user_id
 		session["user_id"] = user_id
 		flash("You were successfully signed in, %s" % username)
+		return True
+	else:
+		flash("Your username or password was invalid, please try again.")
+		return False
 
 #routes here:
 
@@ -59,11 +61,13 @@ def index():
 
 	return render_template("homepage.html")
 
+
 @app.route("/register")
 def register():
 	"""Displays registration form"""
 	
 	return render_template("register.html")
+
 
 @app.route("/register-success", methods=["POST"])
 def register_success():
@@ -83,6 +87,31 @@ def register_success():
 		add_user(username, password, 2)
 
 	return redirect("/")
+
+
+@app.route("/login")
+def login():
+	"""Displays the login form for an existing user"""
+
+	return render_template("login.html")
+
+
+@app.route("/login-success", methods=["POST"])
+def login_sucsess():
+	"""Checks if the user's password is valid for their username, if so,
+	logs the user in via a session cookie and redirects home, if not, flashes 
+	an error message and redirects back to the login page"""
+	
+	username = request.form.get("username")
+	password = request.form.get("password")	
+
+	success = check_user_credentials(username, password)
+
+	if success:
+		return redirect("/")
+	if not success:
+		return redirect("/login")
+
 
 
 if __name__ == '__main__':
