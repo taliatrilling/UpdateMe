@@ -3,5 +3,8 @@
 
 {% block content %}
 
+{% if "user_id" in session %}
+<h1>My Feed</h1>
+{% endif %}
 
 {% endblock %}

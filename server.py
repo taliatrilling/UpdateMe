@@ -6,13 +6,15 @@ from flask import (Flask, render_template, redirect, request, session, flash)
 
 from flask_debugtoolbar import DebugToolbarExtension
 
-from model import User, Update, connect_to_db, db
+from model import User, Update, Comment, Pair, Message, connect_to_db, db
 
 from datetime import datetime
 
 import os
 
 app = Flask(__name__)
+
+#add change password functionality!
 
 #reminder: need to input "source secret.sh" in shell to use
 app.secret_key = os.environ["SECRET_KEY"]
@@ -61,6 +63,32 @@ def submit_update(user_id, body):
 
 	db.session.add(update)
 	db.session.commit()
+
+def submit_comment(user_id, update_id, body):
+	"""Creates a comment object and adds it to the database"""
+
+	comment = Comment(update_id=update_id, user_id=user_id, comment_body=body,
+		posted_at=datetime.now())
+
+	db.session.add(comment)
+	db.session.commit()
+
+def display_comments(update_id):
+	"""Displays all existing comments on an update"""
+
+	user_comments = {}
+
+	comments = Comment.query.filter(Comment.update_id == update_id).all()
+
+	for comment in comments:
+		user = User.query.get(comment.user_id)
+		username = user.username
+		time_date = datetime.strftime(comment.posted_at, "%-H:%M UTC on %B %-d, %Y")
+		user_comments[comment.comment_id] = {"comment on": comment.update_id,
+		"posted by": username, "posted at": time_date, 
+		"body": comment.comment_body}
+
+	return user_comments
 
 #routes here:
 
@@ -147,6 +175,7 @@ def compose_update():
 
 @app.route("/update-posted", methods=["POST"])
 def post_update():
+	"""Posts user update, adds it to the database, redirects to the homepage"""
 
 	user_id = session["user_id"]
 	body = request.form.get("textbody")
@@ -161,9 +190,30 @@ def show_specific_update(update_id):
 
 	update = Update.query.get(update_id)
 	text = update.update_body
+	user_id = update.user_id
+	user = User.query.get(user_id)
+	username = user.username
+	time = datetime.strftime(update.posted_at, "%-H:%M UTC")
+	date = datetime.strftime(update.posted_at, "%B %-d, %Y")
+	user_comments = display_comments(update_id)
 
-	return render_template("specific_update.html", update_id=update_id, text=text)
+	return render_template("specific_update.html", username=username, text=text, 
+		time=time, date=date, update_id=update_id, user_comments=user_comments)
 
+
+@app.route("/add-comment/<int:update_id>", methods=["POST"])
+def add_comment(update_id):
+	"""Adds a specific comment to a specific update (requires user to be logged in)"""
+
+	if "user_id" in session:
+		text = request.form.get("comment")
+		user_id = session["user_id"]
+		submit_comment(user_id, update_id, text)
+		flash("Comment submitted!")
+		return redirect("/update/" + str(update_id))
+	else:
+		flash("You must be signed in to add a comment!")
+		return redirect("/update/" + str(update_id))
 
 if __name__ == '__main__':
 	app.debug = True

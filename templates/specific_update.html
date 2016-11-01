@@ -3,6 +3,22 @@
 
 {% block content %}
 
-{{ update_id }}
-{{ text }}
+<h1>"{{ text }}"</h1>
+<h2>posted by {{ username }} at {{ time }} on {{ date }}</h2>
+
+
+{% for key, value in user_comments.items() %}
+
+	<h3>Comment:<br>{{ value["body"] }}<br>Posted by: {{ value["posted by"] }} at {{ value["posted at"] }}<br><br></h3>
+
+{% endfor %}
+
+<h3> 
+	<form action="/add-comment/{{ update_id }}" method="POST"> 
+		<label>Leave a comment: </label><br><br>
+		<textarea rows="2" cols="40" name="comment"></textarea><br><br>
+		<input type="submit">
+	</form>
+</h3>
+
 {% endblock %}

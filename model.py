@@ -75,12 +75,29 @@ class Pair(db.Model):
 	#table 
 	__tablename__ = "pairs" 
 
-	pair_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	pair_id = db.Column(db.Integer, autoincrement=True, primary_key=True) #change to UUID version 4 potentially 
 	user_1_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 	user_2_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 
 	user1 = db.relationship("User", backref="pair1", foreign_keys=[user_1_id])
 	user2 = db.relationship("User", backref="pair2", foreign_keys=[user_2_id])
+
+class Message(db.Model):
+	"""Messages between a pair of users"""
+
+	__tablename__ = "messages"
+
+	msg_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	owner_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+	recipient_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+	sent_at = db.Column(db.DateTime, nullable=False)
+	message_body = db.Column(db.String(140), nullable=False)
+	read = db.Column(db.Boolean, default=False)
+	deleted = db.Column(db.Boolean, default=False)
+
+	owner = db.relationship("User", backref="user_owner", foreign_keys=[owner_id])
+	recipient = db.relationship("User", backref="user_recipient", foreign_keys=[recipient_id])
+
 
 def connect_to_db(app):
 	"""Connects the PostgreSQL database to the Flask app, defaults to use the 
