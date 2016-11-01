@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Inbox{% endblock %}
+
+{% block content %}
+<h1>Inbox</h1>
+
+<h2><a href="/compose-message">Compose new message thread</a>
+
+{% for thread in threads %}
+
+<h2><a href=" ">Conversation with {{ thread }}</a>
+
+{% endfor %}
+
+{% endblock %}

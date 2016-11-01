@@ -90,6 +90,25 @@ def display_comments(update_id):
 
 	return user_comments
 
+def check_inbox(user_id):
+	"""For a given user, checks what message threads they are currently in to
+	then display an inbox"""
+
+	users_in_conversations_with = []
+
+	messages = Message.query.filter((Message.owner_id == user_id) | (Message.recipient_id == user_id)).all()
+	# received_messages = Message.query.filter(Message.recipient_id == user_id).all()
+
+	for message in messages:
+		if message.owner_id not in users_in_conversations_with and message.recipient_id not in users_in_conversations_with:
+			if message.owner_id == user_id:
+				users_in_conversations_with.append(message.recipient_id)
+			else:
+				users_in_conversations_with.append(message.owner_id)
+
+	return users_in_conversations_with
+
+
 #routes here:
 
 @app.route("/")
@@ -193,12 +212,11 @@ def show_specific_update(update_id):
 	user_id = update.user_id
 	user = User.query.get(user_id)
 	username = user.username
-	time = datetime.strftime(update.posted_at, "%-H:%M UTC")
-	date = datetime.strftime(update.posted_at, "%B %-d, %Y")
+	time_date = datetime.strftime(update.posted_at, "%-H:%M UTC on %B %-d, %Y")
 	user_comments = display_comments(update_id)
 
 	return render_template("specific_update.html", username=username, text=text, 
-		time=time, date=date, update_id=update_id, user_comments=user_comments)
+		time_date=time_date, update_id=update_id, user_comments=user_comments)
 
 
 @app.route("/add-comment/<int:update_id>", methods=["POST"])
@@ -214,6 +232,25 @@ def add_comment(update_id):
 	else:
 		flash("You must be signed in to add a comment!")
 		return redirect("/update/" + str(update_id))
+
+
+@app.route("/inbox")
+def show_inbox():
+	"""Shows inbox contents/existing messages for users"""
+
+	if "user_id" in session:
+		user_id = session["user_id"]
+		threads = check_inbox(user_id)
+		return render_template("inbox.html", threads=threads)
+	else:
+		flash("Please sign in to view your inbox")
+		return redirect("/")
+
+
+@app.route("/compose-message")
+def compose_message():
+	"""Shows form to gather information to send a message to a fellow user"""
+	pass
 
 if __name__ == '__main__':
 	app.debug = True

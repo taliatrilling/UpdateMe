@@ -4,7 +4,7 @@
 {% block content %}
 
 <h1>"{{ text }}"</h1>
-<h2>posted by {{ username }} at {{ time }} on {{ date }}</h2>
+<h2>posted by {{ username }} at {{ time_date }}</h2>
 
 
 {% for key, value in user_comments.items() %}
