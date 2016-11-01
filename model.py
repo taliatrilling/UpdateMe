@@ -46,12 +46,41 @@ class Update(db.Model):
 				% (self.update_id, self.user_id, self.update_body))
 
 
-# class Permission(db.Model):
-# 	"""Permissions granted between users to see update content--only 
-# 	relevant to users whose profile is not set to public"""
+class Comment(db.Model):
+	"""Information associated with a specific comment on a specific update"""
 
-# 	__tablename__ = "permission" 
+	__tablename__ = "comments"
 
+	comment_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	update_id = db.Column(db.Integer, db.ForeignKey("updates.update_id"), nullable=False)
+	user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+	comment_body = db.Column(db.String(140), nullable=False)
+	posted_at = db.Column(db.DateTime, nullable=False)
+
+	user = db.relationship("User", backref="comments")
+	update = db.relationship("Update", backref="comments")
+
+	def __repr__(self):
+		"""Provides useful representation of an instance when printed"""
+
+		return ("<Comment id=%d update_id=%d user_id=%d comment=%s>"
+				% (self.comment_id, self.update_id, self.user_id, self.comment_body))
+
+
+class Pair(db.Model):
+	"""Permissions granted between users to see update content--only 
+	relevant to users whose profile is not set to public, if a user pair 
+	is not in the table, they have not yet connected"""
+	#association table between users, only pairs that are connected are in the 
+	#table 
+	__tablename__ = "pairs" 
+
+	pair_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	user_1_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+	user_2_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+
+	user1 = db.relationship("User", backref="pair1", foreign_keys=[user_1_id])
+	user2 = db.relationship("User", backref="pair2", foreign_keys=[user_2_id])
 
 def connect_to_db(app):
 	"""Connects the PostgreSQL database to the Flask app, defaults to use the 

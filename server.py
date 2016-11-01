@@ -43,8 +43,9 @@ def add_user(username, password, is_public):
 def check_user_credentials(username, password):
 	"""Checks the validity of a username and password"""
 
-	if User.query.filter(User.username == username, User.password == password).first():
-		user = User.query.filter(username == username, password == password).first()
+	user = User.query.filter(username == username, password == password).first()
+
+	if user:
 		user_id = user.user_id
 		session["user_id"] = user_id
 		flash("You were successfully signed in, %s" % username)
@@ -52,6 +53,14 @@ def check_user_credentials(username, password):
 	else:
 		flash("Your username or password was invalid, please try again.")
 		return False
+
+def submit_update(user_id, body):
+	"""Creates an update object with the text body and user_id passed in"""
+
+	update = Update(user_id=user_id, update_body=body, posted_at=datetime.now())
+
+	db.session.add(update)
+	db.session.commit()
 
 #routes here:
 
@@ -79,6 +88,7 @@ def register_success():
 	password = request.form.get("password")
 	is_public = request.form.get("is_public")
 
+#change to 0 and 1 
 	if is_public == "1":
 		public = 1
 		add_user(username, password, 1)
@@ -97,7 +107,7 @@ def login():
 
 
 @app.route("/login-success", methods=["POST"])
-def login_sucsess():
+def login_success():
 	"""Checks if the user's password is valid for their username, if so,
 	logs the user in via a session cookie and redirects home, if not, flashes 
 	an error message and redirects back to the login page"""
@@ -112,6 +122,47 @@ def login_sucsess():
 	if not success:
 		return redirect("/login")
 
+
+@app.route("/logout")
+def logout():
+	"""Logs out user by deleting the session cookie, flashes success message 
+	and redirects home"""
+
+	del session["user_id"]
+	flash("You have successfully been logged out")
+	return redirect("/")
+
+
+@app.route("/compose-update")
+def compose_update():
+	"""If user is logged in via session cookie, displays form to submit update,
+	otherwise redirects home"""
+
+	if "user_id" in session:
+		return render_template("update.html")
+	else: 
+		flash("Please sign in to post an update")
+		return redirect("/")
+
+
+@app.route("/update-posted", methods=["POST"])
+def post_update():
+
+	user_id = session["user_id"]
+	body = request.form.get("textbody")
+
+	submit_update(user_id, body)
+	flash("Your update has been successfully posted!")
+	return redirect("/")
+
+@app.route("/update/<int:update_id>")
+def show_specific_update(update_id):
+	"""Shows a specific update as associated with its update id"""
+
+	update = Update.query.get(update_id)
+	text = update.update_body
+
+	return render_template("specific_update.html", update_id=update_id, text=text)
 
 
 if __name__ == '__main__':
