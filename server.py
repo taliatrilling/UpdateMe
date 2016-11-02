@@ -187,6 +187,11 @@ def pair_lookup(user_1_id, user_2_id):
 	if pair: 
 		return pair.pair_id
 
+def show_feed():
+	"""Something to show either all public content, all content from users 
+	connected with, or a combination based on user input--handled in JS?"""
+	pass
+
 #routes
 
 @app.route("/")
@@ -396,6 +401,15 @@ def submit_reply_message():
 
 	flash("Your message has been sent!")
 	return redirect("/message/" + str(pair))
+
+@app.route("/check-username")
+def check_username():
+	""" """
+	username = request.args.get("username")
+	if User.query.filter(User.username == username).first():
+		return "exists"
+	else:
+		return "available"
 
 
 if __name__ == '__main__':

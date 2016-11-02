@@ -5,11 +5,12 @@
 
 <h1>Register</h1>
 
-<form action="/register-success" method="POST">
-	<label>Please enter a username (must be between 1 and 20 characters, 
+<form id="blah" action="/register-success" method="POST">
+	<label>Please enter a username (must be between 4 and 20 characters, 
 		only contain valid characters without spaces, and be unique from 
 		existing users):</label><br>
-	<input type="text" name="username"><br><br>
+	<input id="username" type="text" name="username"><br>
+	<div id="usernamewarning"></div><br>
 	<label>Please enter a password (must be between 8 and 20 characters and 
 		only contain valid characters without spaces):</label><br>
 	<input type="password" name="password"><br><br>
@@ -19,6 +20,46 @@
 	<input type="radio" name="is_public" value="2">Private<br><br>
 	<input type="submit">
 
+
 </form>
+
+<script src="https://code.jquery.com/jquery.js"></script>
+
+<script>
+
+"use strict"
+
+
+$("#username").on("change", function() {
+	var input = $("#username").val();
+	if ((input.length < 4) || (input.length > 20)) {
+		$("#usernamewarning").html("Please enter a username between 4 and 20 characters");
+		return;
+	} $.get("/check-username", {"username":input}, function(results) {
+	if (results === "exists") {
+		$("#usernamewarning").html("That username is already in the system, please choose another.");
+	}
+	if (results === "available") {
+		$("#usernamewarning").html("That username is available!");
+	}
+})
+});
+
+
+// $("#username").on("change", function() {
+// 	var input = $("#username").val();
+// 	$.get("/check-username", {"username":input}, function(results) {
+// 		if (results === "exists") {
+// 			$("#usernamewarning").html("That username is already in the system, please choose another.");
+// 		}
+// 		if (results === "available") {
+// 			$("#usernamewarning").html("That username is available!");
+// 		}
+// 	})
+// });
+
+
+
+</script>
 
 {% endblock %}
