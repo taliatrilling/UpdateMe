@@ -6,7 +6,7 @@
 	</head>
 	<body>
 		{% if "user_id" in session %}
-			<a href="/logout">Logout</a>
+			<header>Logged in as {{ session["username"]}} <a href="/logout">Logout</a></header>
 		{% else %}
 			<a href="/login">Log In</a> or <a href="register">Register</a>
 		{% endif %}

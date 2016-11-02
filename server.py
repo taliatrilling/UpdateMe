@@ -26,6 +26,7 @@ app.jinja_env.auto_reload = True
 
 #logic functions here:
 
+
 def add_user(username, password, is_public):
 	"""Adds new user to database, allowing them to use the website"""
 	if is_public == 1:
@@ -38,7 +39,9 @@ def add_user(username, password, is_public):
 	db.session.add(user)
 	db.session.commit()
 	user_id = user.user_id
+	username = user.username
 	session["user_id"] = user_id
+	session["username"] = username
 	flash("You have successfully registered, %s." % username)
 	return user_id
 
@@ -49,7 +52,9 @@ def check_user_credentials(username, password):
 
 	if user:
 		user_id = user.user_id
+		username = user.username
 		session["user_id"] = user_id
+		session["username"] = username
 		flash("You were successfully signed in, %s" % username)
 		return True
 	else:
@@ -125,13 +130,13 @@ def connections(user_id):
 	return connected_to
 
 def get_message_history(pair_id):
-	"""For a given pair, return all messages between the two users"""
+	"""For a given pair, return the 10 most recent messages between the two users"""
 
 	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
 	messages = Message.query.filter(
 		((Message.recipient_id == pair.user_1_id) | (Message.recipient_id == pair.user_2_id)), 
 		((Message.owner_id == pair.user_1_id) | (Message.owner_id == pair.user_2_id)),
-		Message.deleted == False).order_by(Message.sent_at).all()
+		Message.deleted == False).order_by(Message.sent_at).limit(10).all()
 
 	message_history = {}
 
@@ -146,7 +151,23 @@ def get_message_history(pair_id):
 
 	return message_history
 
-#routes here:
+def which_pair_by_active_user(pair_id):
+	"""When logged in as a user, for pairs that the user is in, when given a 
+	certain pair_id, returns the username of the other user in the pair"""
+
+	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
+	
+	if "user_id" not in session:
+		return False
+	if session["user_id"] != pair.user_1_id and session["user_id"] != pair.user_2_id:
+		return False
+	if session["user_id"] == pair.user_1_id:
+		other_user = User.query.get(pair.user_2_id)
+		return other_user.username
+	if session["user_id"] == pair.user_2_id:
+		other_user = User.query.get(pair.user_1_id)
+		return other_user.username
+
 
 @app.route("/")
 def index():
@@ -213,6 +234,7 @@ def logout():
 	and redirects home"""
 
 	del session["user_id"]
+	del session["username"]
 	flash("You have successfully been logged out")
 	return redirect("/")
 
@@ -304,11 +326,13 @@ def compose_message():
 def show_message(pair_id):
 	
 	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
+	other_user = which_pair_by_active_user(pair_id)
 	if "user_id" in session:
 		user_id = session["user_id"]
 		if user_id == pair.user_1_id or user_id == pair.user_2_id:
 			message_history = get_message_history(pair_id)
-			return render_template("specific_message.html", message_history=message_history)
+			return render_template("specific_message.html", message_history=message_history,
+				other_user=other_user)
 		else:
 			flash("You do not have access to this page.")
 			return redirect("/")

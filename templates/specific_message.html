@@ -3,6 +3,12 @@
 
 {% block content %}
 
+{% if message_history|length == 0 %}
+
+	<h1>There are currently no messages between you and {{ other_user }}! Would you like to start a conversation?</h1>
+
+{% endif %}
+
 {% for message, content in message_history.items() %}
 
 	<h2>To: {{ content["to"] }}<br>From: {{ content["from"] }}</h2>
@@ -10,5 +16,12 @@
 	<h4>Sent: {{ content["sent at"] }}</h4>
 
 {% endfor %}
+
+	<h2>Send a new message to {{ other_user }}:</h2>
+	<form action="" method="POST">
+		<label>Message:</label><br>
+		<textarea rows="3" cols="40" value="message-body"></textarea><br><br>
+		<input type="submit">
+	</form>
 
 {% endblock %}
