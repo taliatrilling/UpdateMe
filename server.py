@@ -277,7 +277,10 @@ def compose_message():
 		flash("Please sign in to compose a message")
 		return redirect("/")
 
+
 @app.route("message/<int:pair_id>")
+def show_message(pair_id):
+	pass
 
 
 
