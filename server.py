@@ -124,6 +124,23 @@ def connections(user_id):
 
 	return connected_to
 
+def get_message_history(pair_id):
+	"""For a given pair, return all messages between the two users"""
+
+	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
+	messages = Message.query.filter(
+		((Message.recipient_id == pair.user_1_id) | (Message.recipient_id == pair.user_2_id)), 
+		((Message.owner_id == pair.user_1_id) | (Message.owner_id == pair.user_2_id)),
+		Message.deleted == False).order_by(Message.sent_at).all()
+
+	message_history = {}
+
+	for message in messages:
+		message_history[message.msg_id] = {"to": message.owner_id, "from": message.recipient_id,
+		"message": message.message_body, "sent at": message.sent_at, "read": message.read}
+
+	return message_history
+
 #routes here:
 
 @app.route("/")
@@ -278,10 +295,17 @@ def compose_message():
 		return redirect("/")
 
 
-@app.route("message/<int:pair_id>")
+@app.route("/message/<int:pair_id>")
 def show_message(pair_id):
-	pass
-
+	
+	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
+	user_id = session["user_id"]
+	if user_id == pair.user_1_id or user_id == pair.user_2_id:
+		message_history = get_message_history(pair_id)
+		return render_template("specific_message.html", message_history=message_history)
+	else:
+		flash("You do not have access to this page.")
+		return redirect("/")
 
 
 if __name__ == '__main__':
