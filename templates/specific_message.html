@@ -18,9 +18,10 @@
 {% endfor %}
 
 	<h2>Send a new message to {{ other_user }}:</h2>
-	<form action="" method="POST">
+	<form action="/submit-reply-message" method="POST">
 		<label>Message:</label><br>
-		<textarea rows="3" cols="40" value="message-body"></textarea><br><br>
+		<textarea rows="3" cols="40" name="message"></textarea><br><br>
+		<input type="hidden" name="recipient" value="{{ other_user_id }}">
 		<input type="submit">
 	</form>
 

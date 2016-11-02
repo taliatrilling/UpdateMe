@@ -153,7 +153,7 @@ def get_message_history(pair_id):
 
 def which_pair_by_active_user(pair_id):
 	"""When logged in as a user, for pairs that the user is in, when given a 
-	certain pair_id, returns the username of the other user in the pair"""
+	certain pair_id, returns the user_id of the other user in the pair"""
 
 	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
 	
@@ -163,11 +163,31 @@ def which_pair_by_active_user(pair_id):
 		return False
 	if session["user_id"] == pair.user_1_id:
 		other_user = User.query.get(pair.user_2_id)
-		return other_user.username
+		return other_user.user_id
 	if session["user_id"] == pair.user_2_id:
 		other_user = User.query.get(pair.user_1_id)
-		return other_user.username
+		return other_user.user_id
 
+def submit_message_to_db(recipient_id, message_body):
+	"""Adds a message instance to the db"""
+
+	user_id = session["user_id"]
+
+	message = Message(owner_id=user_id, recipient_id=recipient_id,
+		sent_at=datetime.now(), message_body=message_body)
+	db.session.add(message)
+	db.session.commit()
+
+def pair_lookup(user_1_id, user_2_id):
+	"""For two users, finds the pair_id for the connection (if exists)"""
+
+	pair = Pair.query.filter((Pair.user_1_id == user_1_id) | (Pair.user_1_id == user_2_id),
+		(Pair.user_2_id == user_1_id) | (Pair.user_2_id == user_2_id)).first()
+
+	if pair: 
+		return pair.pair_id
+
+#routes
 
 @app.route("/")
 def index():
@@ -306,6 +326,26 @@ def show_inbox():
 		return redirect("/")
 
 
+@app.route("/message/<int:pair_id>")
+def show_message(pair_id):
+	
+	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
+	other_user_id = which_pair_by_active_user(pair_id)
+	other_user = (User.query.get(other_user_id)).username
+	if "user_id" in session:
+		user_id = session["user_id"]
+		if user_id == pair.user_1_id or user_id == pair.user_2_id:
+			message_history = get_message_history(pair_id)
+			return render_template("specific_message.html", message_history=message_history,
+				other_user=other_user, other_user_id=other_user_id)
+		else:
+			flash("You do not have access to this page.")
+			return redirect("/")
+	else:
+		flash("Please sign in to access messages.")
+		return redirect("/login")
+
+
 @app.route("/compose-message")
 def compose_message():
 	"""Shows form to gather information to send a message to a fellow user"""
@@ -322,23 +362,40 @@ def compose_message():
 		return redirect("/")
 
 
-@app.route("/message/<int:pair_id>")
-def show_message(pair_id):
+@app.route("/submit-message", methods=["POST"])
+def submit_message():
+	"""Adds user's message to a connection to the db and redirects to that
+	conversation thread"""
 	
-	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
-	other_user = which_pair_by_active_user(pair_id)
-	if "user_id" in session:
-		user_id = session["user_id"]
-		if user_id == pair.user_1_id or user_id == pair.user_2_id:
-			message_history = get_message_history(pair_id)
-			return render_template("specific_message.html", message_history=message_history,
-				other_user=other_user)
-		else:
-			flash("You do not have access to this page.")
-			return redirect("/")
-	else:
-		flash("Please sign in to access messages.")
-		return redirect("/login")
+	user_id = session["user_id"]
+	message_body = request.form.get("message")
+	recipient = request.form.get("chosen-recipient")
+	recipient_id = int(recipient)
+
+	submit_message_to_db(recipient_id, message_body)
+
+	pair = pair_lookup(user_id, recipient_id)
+
+	flash("Your message has been sent!")
+	return redirect("/message/" + str(pair))
+
+
+@app.route("/submit-reply-message", methods=["POST"])
+def submit_reply_message():
+	"""Adds user's message to a connection to the db and shows success message
+	(in contrast to submit_message function, user does not need to specify who
+	the message is to, as it is a reply to an existing conversation)"""
+	
+	user_id = session["user_id"]
+	message_body = request.form.get("message")
+	other_user_id = request.form.get("recipient")
+
+	submit_message_to_db(other_user_id, message_body)
+
+	pair = pair_lookup(user_id, other_user_id)
+
+	flash("Your message has been sent!")
+	return redirect("/message/" + str(pair))
 
 
 if __name__ == '__main__':

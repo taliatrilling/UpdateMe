@@ -8,7 +8,7 @@
 	if you would like to send a message.</h1>
 
 {% else %}
-<form action="" method="POST">
+<form action="/submit-message" method="POST">
 	<label>Message recipient:</label>
 	<select name="chosen-recipient">
 		{% for key, value in usernames_connected_with.items() %}
@@ -16,7 +16,7 @@
 		{% endfor %}
 	</select><br><br>
 	<label>Message content:</label><br>
-	<textarea rows="3" cols="40" value="message-body"></textarea><br><br>
+	<textarea rows="3" cols="40" name="message"></textarea><br><br>
 	<input type="submit">
 </form>
 
