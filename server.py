@@ -108,6 +108,21 @@ def check_inbox(user_id):
 
 	return users_in_conversations_with
 
+def connections(user_id):
+	"""For a given user, returns list of users this user has connected with/
+	authorized for communication"""
+
+	connected_to = []
+
+	friends = Pair.query.filter((Pair.user_1_id == user_id) | (Pair.user_2_id == user_id)).all()
+
+	for friend in friends:
+		if friend.user_1_id == user_id:
+			connected_to.append(friend.user_2_id)
+		if friend.user_2_id == user_id:
+			connected_to.append(friend.user_1_id)
+
+	return connected_to
 
 #routes here:
 
@@ -250,7 +265,20 @@ def show_inbox():
 @app.route("/compose-message")
 def compose_message():
 	"""Shows form to gather information to send a message to a fellow user"""
-	pass
+	
+	if "user_id" in session:
+		user_id = session["user_id"]
+		user_ids_connected_with = connections(user_id)
+		usernames_connected_with = {}
+		for user_id in user_ids_connected_with:
+			usernames_connected_with[user_id] = (User.query.get(user_id)).username
+		return render_template("compose_message.html", usernames_connected_with=usernames_connected_with)
+	else:
+		flash("Please sign in to compose a message")
+		return redirect("/")
+
+
+
 
 if __name__ == '__main__':
 	app.debug = True

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Compose a Message{% endblock %}
+
+{% block content %}
+{% if usernames_connected_with|length == 0 %}
+<h1>You are not currently connected to any users! Please connect to a user 
+	if you would like to send a message.</h1>
+{% else %}
+<form>
+	<label>Message recipient:</label>
+	<select name="chosen-recipient">
+		{% for key, value in usernames_connected_with.items() %}
+		<option value="{{ key }}">{{ value }}</option>
+		{% endfor %}
+	</select>
+</form>
+
+{% endif %}
+
+{% endblock %}
