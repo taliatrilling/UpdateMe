@@ -3,16 +3,21 @@
 
 {% block content %}
 {% if usernames_connected_with|length == 0 %}
+
 <h1>You are not currently connected to any users! Please connect to a user 
 	if you would like to send a message.</h1>
+
 {% else %}
-<form>
+<form action="" method="POST">
 	<label>Message recipient:</label>
 	<select name="chosen-recipient">
 		{% for key, value in usernames_connected_with.items() %}
 		<option value="{{ key }}">{{ value }}</option>
 		{% endfor %}
-	</select>
+	</select><br><br>
+	<label>Message content:</label><br>
+	<textarea rows="3" cols="40" value="message-body"></textarea><br><br>
+	<input type="submit">
 </form>
 
 {% endif %}
