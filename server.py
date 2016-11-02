@@ -45,7 +45,7 @@ def add_user(username, password, is_public):
 def check_user_credentials(username, password):
 	"""Checks the validity of a username and password"""
 
-	user = User.query.filter(username == username, password == password).first()
+	user = User.query.filter(User.username == username, User.password == password).first()
 
 	if user:
 		user_id = user.user_id
@@ -136,8 +136,13 @@ def get_message_history(pair_id):
 	message_history = {}
 
 	for message in messages:
-		message_history[message.msg_id] = {"to": message.owner_id, "from": message.recipient_id,
-		"message": message.message_body, "sent at": message.sent_at, "read": message.read}
+		owner = User.query.get(message.owner_id)
+		owner_username = owner.username
+		recipient = User.query.get(message.recipient_id)
+		recipient_username = recipient.username
+		time_date = datetime.strftime(message.sent_at, "%-H:%M UTC on %B %-d, %Y")
+		message_history[message.msg_id] = {"to": recipient_username, "from": owner_username,
+		"message": message.message_body, "sent at": time_date, "read": message.read}
 
 	return message_history
 
@@ -299,13 +304,17 @@ def compose_message():
 def show_message(pair_id):
 	
 	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
-	user_id = session["user_id"]
-	if user_id == pair.user_1_id or user_id == pair.user_2_id:
-		message_history = get_message_history(pair_id)
-		return render_template("specific_message.html", message_history=message_history)
+	if "user_id" in session:
+		user_id = session["user_id"]
+		if user_id == pair.user_1_id or user_id == pair.user_2_id:
+			message_history = get_message_history(pair_id)
+			return render_template("specific_message.html", message_history=message_history)
+		else:
+			flash("You do not have access to this page.")
+			return redirect("/")
 	else:
-		flash("You do not have access to this page.")
-		return redirect("/")
+		flash("Please sign in to access messages.")
+		return redirect("/login")
 
 
 if __name__ == '__main__':

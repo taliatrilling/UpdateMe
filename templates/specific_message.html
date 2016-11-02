@@ -5,7 +5,9 @@
 
 {% for message, content in message_history.items() %}
 
-
+	<h2>To: {{ content["to"] }}<br>From: {{ content["from"] }}</h2>
+	<h3>{{ content["message"] }}</h3>
+	<h4>Sent: {{ content["sent at"] }}</h4>
 
 {% endfor %}
 
