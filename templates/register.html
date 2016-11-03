@@ -29,12 +29,22 @@
 
 "use strict"
 
+//help from http://stackoverflow.com/questions/4434076/best-way-to-alphanumeric-check-in-javascript for 
+//alphanumeric check
 
 $("#username").on("change", function() {
 	var input = $("#username").val();
-	if ((input.length < 4) || (input.length > 20)) {
+	if ((input.length < 4) || (input.length > 20)) { 
 		$("#usernamewarning").html("Please enter a username between 4 and 20 characters");
 		return;
+	} for (var i = 0; i < input.length; i++) {
+		var code = input.charCodeAt(i);
+		if (!(code > 47 && code < 58) && // numeric (0-9)
+        	!(code > 64 && code < 91) && // upper alpha (A-Z)
+        	!(code > 96 && code < 123)) { // lower alpha (a-z)
+      	$("#usernamewarning").html("Please only use alphanumeric characters in your username.");
+		return;
+		} 
 	} $.get("/check-username", {"username":input}, function(results) {
 	if (results === "exists") {
 		$("#usernamewarning").html("That username is already in the system, please choose another.");
@@ -44,20 +54,6 @@ $("#username").on("change", function() {
 	}
 })
 });
-
-
-// $("#username").on("change", function() {
-// 	var input = $("#username").val();
-// 	$.get("/check-username", {"username":input}, function(results) {
-// 		if (results === "exists") {
-// 			$("#usernamewarning").html("That username is already in the system, please choose another.");
-// 		}
-// 		if (results === "available") {
-// 			$("#usernamewarning").html("That username is available!");
-// 		}
-// 	})
-// });
-
 
 
 </script>
