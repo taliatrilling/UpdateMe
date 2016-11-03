@@ -13,7 +13,7 @@
 	<div id="usernamewarning"></div><br>
 	<label>Please enter a password (must be between 8 and 20 characters and 
 		only contain valid characters without spaces):</label><br>
-	<input type="password" name="password"><br><br>
+	<input id="password" type="password" name="password"><br><div id="passwordwarning"></div><br><br>
 	<label>Would you like your updates to be public (visible to any user)
 		or private (visible to only users you have approved):</label><br>
 	<input type="radio" name="is_public" value="1">Public<br>
@@ -53,6 +53,22 @@ $("#username").on("change", function() {
 		$("#usernamewarning").html("That username is available!");
 	}
 })
+});
+
+$("#password").on("change", function() {
+	var input = $("#password").val();
+	if ((input.length < 8) || (input.length > 20)) { 
+		$("#passwordwarning").html("Please enter a password between 8 and 20 characters");
+		return;
+	} for (var i = 0; i < input.length; i++) {
+		var code = input.charCodeAt(i);
+		if (!(code > 47 && code < 58) && // numeric (0-9)
+        	!(code > 64 && code < 91) && // upper alpha (A-Z)
+        	!(code > 96 && code < 123)) { // lower alpha (a-z)
+      	$("#passwordwarning").html("Please only use alphanumeric characters in your password.");
+		return;
+		}}
+	$("#passwordwarning").html("Looks good!");
 });
 
 
