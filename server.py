@@ -417,7 +417,7 @@ def submit_reply_message():
 
 @app.route("/check-username")
 def check_username():
-	""" """
+	"""Route for username validation--checks if a given username is already in the system"""
 	username = request.args.get("username")
 	if User.query.filter(User.username == username).first():
 		return "exists"
@@ -427,6 +427,7 @@ def check_username():
 
 @app.route("/feed-all-json")
 def see_all_feed():
+	"""Calls the function that returns the json for 20 most recent public updates"""
 	feed_json = show_feed_all()
 	return feed_json
 
@@ -444,6 +445,42 @@ def search_db():
 
 	return render_template("search_results.html", matching_users=matching_users,
 		matching_updates=matching_updates)
+
+@app.route("/profile/<int:user_id>")
+def show_profile(user_id):
+	"""For a given user, shows their profile if the account is public, or if the current user is connected to
+	the user in question. If they are not connected, displays an option to request to connect"""
+
+	
+	user_of_interest = User.query.filter(User.user_id == user_id).first()
+
+	if "user_id" in session:
+		current_user_id = session["user_id"]
+		if user_of_interest.is_public: 
+			pass
+			#display full profile, with option to add if not connected 
+		else:
+			if pair_lookup(user_of_interest.user_id, current_user_id):
+				pass
+				#display full profile
+			else:
+				return render_template("profile_private.html", user_of_interest=user_of_interest)
+	else:
+		flash("Please log in to view a user's profile")
+		return redirect ("/")
+
+
+@app.route("/feed-connects-json")
+def see_connections_feed():
+	"""Calls and returns result of logic function querying 20 most recent 
+	updates from connections only"""
+
+	pass
+
+@app.route("/request-connection/<int:user_id_of_interest>", methods=["POST"])
+def request_connection(user_id_of_interest):
+	"""Request a connection with a specific user"""
+	pass
 
 
 

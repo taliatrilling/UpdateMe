@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<h1>{{ user_of_interest.username }}</h1>
+
+<h2>Want to see more? {{ user_of_interest.username }}'s account is private -- if you would like to connect 
+	with them, you may request access below:</h2>
+
+<form action="/request-connection/{{ user_of_interest.user_id }}" type="POST">
+	<input type="hidden" name="userid-of-interest" value="{{ user_of_interest.user_id }}">
+	<input type="submit" value="Connect me with {{ user_of_interest.username }}!">
+</form>
+
+
+
+{% endblock %}

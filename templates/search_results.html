@@ -3,16 +3,29 @@
 
 {% block content %}
 
+<h1>Search Results</h1>
+
+{% if matching_users|length == 0 and matching_updates|length == 0 %}
+	<h2>Your search returned no results</h2>
+
+{% else %}
+
+{% if matching_users|length > 0 %}
+	<h2>Users with usernames matching your search:</h2>
+{% endif %}
+
 {% for i in range(matching_users|length) %}
-
-{{ matching_users[i].username }}<br>
-
+	<a href="/profile/{{ matching_users[i].user_id }}">{{ matching_users[i].username }}</a><br>
 {% endfor %}
+
+{% if matching_updates|length > 0 %}
+	<h2>Updates with content matching your search:</h2>
+{% endif %}
 
 {% for i in range(matching_updates|length) %}
-
-{{ matching_updates[i].update_body }}<br>
-
+	<a href= "update/{{ matching_updates[i].update_id }}">{{ matching_updates[i].update_body }}</a><br>
 {% endfor %}
+
+{% endif %}
 
 {% endblock %}

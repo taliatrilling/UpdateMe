@@ -10,7 +10,10 @@
 		{% else %}
 			<a href="/login">Log In</a> or <a href="register">Register</a>
 		{% endif %}
-
+   <form action="/search-results">
+    	<input name= "search" type="text">
+    	<input type="submit" value="Search">
+    </form>
 		{% with messages = get_flashed_messages() %}
 		   {% if messages %}
         <ul class=flashes>
@@ -21,10 +24,7 @@
       {% endif %}
     {% endwith %}
 
-    <form action="/search-results">
-    	<input name= "search" type="text">
-    	<input type="submit" value="Search">
-    </form>
+
 		{% block content %}BODY CONTENT HERE{% endblock %}
 	</body>
 </html>
