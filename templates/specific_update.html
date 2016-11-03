@@ -16,9 +16,25 @@
 <h3> 
 	<form action="/add-comment/{{ update_id }}" method="POST"> 
 		<label>Leave a comment: </label><br><br>
-		<textarea rows="2" cols="40" name="comment"></textarea><br><br>
+		<textarea id="comment" rows="2" cols="40" name="comment"></textarea><br><div id="commentwarning"></div><br>
 		<input type="submit">
 	</form>
 </h3>
+
+<script src="https://code.jquery.com/jquery.js"></script>
+
+<script>
+
+$("#comment").on("change", function() {
+	var input = $("#comment").val();
+	if (input.length > 140) { 
+		$("#commentwarning").html("Please limit your comment to 140 characters.");
+	}	else {
+		$("#commentwarning").html("Looks good!");
+	}
+})
+
+
+</script>
 
 {% endblock %}

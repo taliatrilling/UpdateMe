@@ -20,9 +20,25 @@
 	<h2>Send a new message to {{ other_user }}:</h2>
 	<form action="/submit-reply-message" method="POST">
 		<label>Message:</label><br>
-		<textarea rows="3" cols="40" name="message"></textarea><br><br>
+		<textarea id="message" rows="3" cols="40" name="message"></textarea><br><div id="messagewarning"></div><br>
 		<input type="hidden" name="recipient" value="{{ other_user_id }}">
 		<input type="submit">
 	</form>
+
+<script src="https://code.jquery.com/jquery.js"></script>
+
+<script>
+
+$("#message").on("change", function() {
+	var input = $("#message").val();
+	if (input.length > 140) { 
+		$("#messagewarning").html("Please limit your message to 140 characters.");
+	}	else {
+		$("#messagewarning").html("Looks good!");
+	}
+})
+
+
+</script>
 
 {% endblock %}

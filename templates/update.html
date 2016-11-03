@@ -6,9 +6,26 @@
 <h1>What's on your mind?</h1>
 <form action="/update-posted" method="POST">
 	<label>Tell us about it in 140 characters or less:</label><br>
-	<textarea rows="3" cols="40" name="textbody"></textarea><br><br>
+	<textarea id="update" rows="3" cols="40" name="textbody"></textarea><br><div id="updatewarning"></div><br><br>
 	<input type="submit">
 
 </form>
+
+<script src="https://code.jquery.com/jquery.js"></script>
+
+<script>
+
+$("#update").on("change", function() {
+	var input = $("#update").val();
+	if (input.length > 140) { 
+		$("#updatewarning").html("Please limit your update to 140 characters.");
+	}
+	else {
+		$("#updatewarning").html("Looks good!");
+	}
+})
+
+
+</script>
 
 {% endblock %}
