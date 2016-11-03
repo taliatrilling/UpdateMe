@@ -2,7 +2,7 @@
 
 from jinja2 import StrictUndefined
 
-from flask import (Flask, render_template, redirect, request, session, flash)
+from flask import (Flask, render_template, redirect, request, session, flash, jsonify)
 
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -187,10 +187,21 @@ def pair_lookup(user_1_id, user_2_id):
 	if pair: 
 		return pair.pair_id
 
-def show_feed():
-	"""Something to show either all public content, all content from users 
-	connected with, or a combination based on user input--handled in JS?"""
+def show_feed_all():
+	"""Show 20 most recent public updates"""
+
+	updates = Update.query.order_by(Update.posted_at).limit(20).all()
+	all_updates = []
+	for update in updates:
+		username = (User.query.get(update.user_id)).username
+		posted = datetime.strftime(update.posted_at, "%-H:%M UTC on %B %-d, %Y")
+		all_updates.append([username, update.update_body, posted])
+	return jsonify({"results": all_updates})
+
+def show_feed_connections():
+	"""Show 20 most recent updates created by connections"""
 	pass
+
 
 #routes
 
@@ -198,7 +209,8 @@ def show_feed():
 def index():
 	"""Home page route"""
 
-	return render_template("homepage.html")
+	return render_template("feed_all.html")
+	# return render_template("homepage.html")
 
 
 @app.route("/register")
@@ -402,6 +414,7 @@ def submit_reply_message():
 	flash("Your message has been sent!")
 	return redirect("/message/" + str(pair))
 
+
 @app.route("/check-username")
 def check_username():
 	""" """
@@ -410,6 +423,28 @@ def check_username():
 		return "exists"
 	else:
 		return "available"
+
+
+@app.route("/feed-all-json")
+def see_all_feed():
+	feed_json = show_feed_all()
+	return feed_json
+
+
+@app.route("/search-results")
+def search_db():
+	"""Takes in the user's input to conduct a search of the entire database,
+	including users and updates (updates only if content is public)"""
+
+	user_input = request.args.get("search")
+
+	matching_users = User.query.filter(User.username.like("%"+user_input+"%")).all()
+	matching_updates = Update.query.filter(Update.update_body.like("%"+user_input+"%")).all()
+
+
+	return render_template("search_results.html", matching_users=matching_users,
+		matching_updates=matching_updates)
+
 
 
 if __name__ == '__main__':

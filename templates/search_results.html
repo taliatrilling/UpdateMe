@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+
+{% for i in range(matching_users|length) %}
+
+{{ matching_users[i].username }}<br>
+
+{% endfor %}
+
+{% for i in range(matching_updates|length) %}
+
+{{ matching_updates[i].update_body }}<br>
+
+{% endfor %}
+
+{% endblock %}

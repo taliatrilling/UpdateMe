@@ -20,6 +20,11 @@
         </ul>
       {% endif %}
     {% endwith %}
+
+    <form action="/search-results">
+    	<input name= "search" type="text">
+    	<input type="submit" value="Search">
+    </form>
 		{% block content %}BODY CONTENT HERE{% endblock %}
 	</body>
 </html>

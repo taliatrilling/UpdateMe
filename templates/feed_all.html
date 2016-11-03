@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Feed{% endblock %}
+
+{% block content %}
+
+<h1>My Feed</h1>
+<button id="all">All</button>
+<div id="post"></div>
+
+<script src="https://code.jquery.com/jquery.js"></script>
+
+<script>
+
+$("#all").on("click", function() {
+	$.get("/feed-all-json", function(results) {
+		for (var i=0; i < results["results"].length; i++) {
+			$("#post").append("<h1>" + results["results"][i][1] 
+				+ "</h1>" + "<h2> Posted by: " + results["results"][i][0] + "</h2>" 
+				+ results["results"][i].slice(2) + "<br>");
+		}
+	}
+)});
+
+</script>
+
+{% endblock %}
