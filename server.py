@@ -198,10 +198,32 @@ def show_feed_all():
 		all_updates.append([username, update.update_body, posted])
 	return jsonify({"results": all_updates})
 
+def all_connections_for_current_user():
+	"""Used to show feed connections, for the current user returns a list of user_ids connected with"""
+
+	current_user_id = session["user_id"]
+	pairs_in = Pair.query.filter((Pair.user_1_id == current_user_id) | (Pair.user_2_id == current_user_id)).all()
+	pairs_with = []
+	for pair in pairs_in:
+		if pair.user_1_id == current_user_id:
+			pairs_with.append(pair.user_2_id)
+		if pair.user_2_id == current_user_id:
+			pairs_with.append(pair.user_1_id)
+	return pairs_with
+
+		
 def show_feed_connections():
 	"""Show 20 most recent updates created by connections"""
-	pass
-
+	
+	current_user_id = session["user_id"]
+	pairs_with = all_connections_for_current_user()
+	updates = Update.query.filter(Update.user_id.in_(pairs_with)).order_by(Update.posted_at).limit(20).all()
+	all_updates = []
+	for update in updates:
+		username = (User.query.get(update.user_id)).username
+		posted = datetime.strftime(update.posted_at, "%-H:%M UTC on %B %-d, %Y")
+		all_updates.append([username, update.update_body, posted])
+	return jsonify({"results": all_updates})
 
 #routes
 
@@ -457,12 +479,13 @@ def show_profile(user_id):
 	if "user_id" in session:
 		current_user_id = session["user_id"]
 		if user_of_interest.is_public: 
-			pass
-			#display full profile, with option to add if not connected 
+			if pair_lookup(user_of_interest.user_id, current_user_id):
+				pass #display full profile, with option to directly message?
+			else:
+				pass #display full profile, with option to add 
 		else:
 			if pair_lookup(user_of_interest.user_id, current_user_id):
-				pass
-				#display full profile
+				pass #display full profile
 			else:
 				return render_template("profile_private.html", user_of_interest=user_of_interest)
 	else:
@@ -475,13 +498,16 @@ def see_connections_feed():
 	"""Calls and returns result of logic function querying 20 most recent 
 	updates from connections only"""
 
-	pass
+	feed_json = show_feed_connections()
+	return feed_json
 
-@app.route("/request-connection/<int:user_id_of_interest>", methods=["POST"])
-def request_connection(user_id_of_interest):
+@app.route("/request-connection/<int:other_user_id>", methods=["POST"])
+def request_connection(other_user_id):
 	"""Request a connection with a specific user"""
+	
+	current_user_id = session["user_id"]
+	#find way to store requests?
 	pass
-
 
 
 if __name__ == '__main__':
