@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+
+<h1>{{ user_of_interest.username }}</h1>
+
+<h2>You are not currently connected with {{ user_of_interest.username }}.<br>Because 
+their content is public, you may still see their updates, but you may not message them.</h2>
+<h3>If you would like to connect with them, you may request access below:</h2>
+
+<form action="/request-connection/{{ user_of_interest.user_id }}" method="POST">
+	<input type="submit" value="Connect me with {{ user_of_interest.username }}!">
+</form>
+
+</h3>
+
+{% if updates|length > 0 %}
+
+	<h3>Updates posted by {{ user_of_interest.username }}:</h3>
+
+{% for update in updates %}
+
+	{{ update.update_body }}<br>
+	Posted at {{ update.posted_at }}<br><br>
+
+{% endfor %}
+
+{% endif %}
+
+
+{% endblock %}

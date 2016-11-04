@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+
+<h1>Your Profile</h1>
+
+{% if updates|length > 0 %}
+
+	<h3>Updates posted by you:</h3>
+
+{% for update in updates %}
+
+	{{ update.update_body }}<br>
+	Posted at {{ update.posted_at }}<br><br>
+
+{% endfor %}
+
+{% endif %}
+
+{% endblock %}
+

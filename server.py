@@ -225,9 +225,11 @@ def show_feed_connections():
 		all_updates.append([username, update.update_body, posted])
 	return jsonify({"results": all_updates})
 
-def all_updates_for_specific_user():
-	"""Returns a list of update ids that represent the updates a user has posted"""
-	pass
+def all_updates_for_specific_user(user_id):
+	"""Returns a list of update objects represent the updates a user has posted"""
+	
+	updates = Update.query.filter(Update.user_id == user_id).order_by(Update.posted_at).all()
+	return updates
 
 
 #routes
@@ -483,13 +485,16 @@ def show_profile(user_id):
 
 	if "user_id" in session:
 		current_user_id = session["user_id"]
-		if user_of_interest.is_public: 
+		if user_of_interest.user_id == current_user_id:
+			updates = all_updates_for_specific_user(user_id)
+			return render_template("user_profile.html", updates=updates)
+		elif user_of_interest.is_public: 
 			if pair_lookup(user_of_interest.user_id, current_user_id):
-				#display full profile, with option to directly message?
-				return render_template("public_profile_connected.html", user_of_interest=user_of_interest)
+				updates = all_updates_for_specific_user(user_id)
+				return render_template("public_profile_connected.html", user_of_interest=user_of_interest, updates=updates)
 			else:
-				#display full profile, with option to add 
-				return render_template("public_profile.html", user_of_interest=user_of_interest)
+				updates = all_updates_for_specific_user(user_id)
+				return render_template("public_profile.html", user_of_interest=user_of_interest, updates=updates)
 		else:
 			if pair_lookup(user_of_interest.user_id, current_user_id):
 				#display full profile
@@ -517,11 +522,6 @@ def request_connection(other_user_id):
 	#find way to store requests?
 	pass
 
-@app.route("/updates/<int:user_id>")
-def show_all_updates_for_user(user_id):
-	updates = all_updates_for_specific_user()
-
-	pass #return render_template 
 
 
 if __name__ == '__main__':

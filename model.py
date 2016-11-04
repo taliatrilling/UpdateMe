@@ -82,6 +82,12 @@ class Pair(db.Model):
 	user1 = db.relationship("User", backref="pair1", foreign_keys=[user_1_id])
 	user2 = db.relationship("User", backref="pair2", foreign_keys=[user_2_id])
 
+	def __repr__(self):
+		"""Provides useful representation of an instance when printed"""
+
+		return ("<Pair_id=%d user_1_id=%d user_2_id=%d>"
+				% (self.pair_id, self.user_1_id, self.user_2_id))
+
 class Message(db.Model):
 	"""Messages between a pair of users"""
 
@@ -97,6 +103,30 @@ class Message(db.Model):
 
 	owner = db.relationship("User", backref="user_owner", foreign_keys=[owner_id])
 	recipient = db.relationship("User", backref="user_recipient", foreign_keys=[recipient_id])
+
+	def __repr__(self):
+		"""Provides useful representation of an instance when printed"""
+
+		return ("<msg_id=%d owner_id=%d recipient_id=%d message_body=%s>"
+				% (self.msg_id, self.owner_id, self.recipient_id, self.message_body))
+
+class Request(db.Model):
+	"""Requests from one user to another to connect"""
+
+	__tablename__ = "requests"
+
+	request_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	requester_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+	requestee_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+
+	requester = db.relationship("User", backref="user_requester", foreign_keys=[requester_id])
+	requestee = db.relationship("User", backref="user_requestee", foreign_keys=[requestee_id])
+
+	def __repr__(self):
+		"""Provides useful representation of an instance when printed"""
+
+		return ("<request_id=%d requester_id=%d requestee_id=%d>"
+				% (self.request_id, self.requester_id, self.requestee_id))
 
 
 def connect_to_db(app):

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+
+<h1>{{ user_of_interest.username }}</h1>
+
+<h2>You are currently connected with {{ user_of_interest.username }}</h2>
+<h3>Want to send them a direct message?</h3>
+
+
+<h2>Send a new message to {{ user_of_interest.username }}:</h2>
+<form action="/submit-reply-message" method="POST">
+	<label>Message:</label><br>
+	<textarea id="message" rows="3" cols="40" name="message"></textarea><br><div id="messagewarning"></div><br>
+	<input type="hidden" name="recipient" value="{{ user_of_interest.user_id }}">
+	<input type="submit">
+</form>
+
+{% if updates|length > 0 %}
+
+	<h3>Updates posted by {{ user_of_interest.username }}:</h3>
+
+{% for update in updates %}
+
+	{{ update.update_body }}<br>
+	Posted at {{ update.posted_at }}<br><br>
+
+{% endfor %}
+
+{% endif %}
+
+<script src="https://code.jquery.com/jquery.js"></script>
+
+<script>
+
+$("#message").on("change", function() {
+	var input = $("#message").val();
+	if (input.length > 140) { 
+		$("#messagewarning").html("Please limit your message to 140 characters.");
+	}	else {
+		$("#messagewarning").html("Looks good!");
+	}
+})
+
+
+</script>
+
+{% endblock %}
