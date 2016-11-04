@@ -225,6 +225,11 @@ def show_feed_connections():
 		all_updates.append([username, update.update_body, posted])
 	return jsonify({"results": all_updates})
 
+def all_updates_for_specific_user():
+	"""Returns a list of update ids that represent the updates a user has posted"""
+	pass
+
+
 #routes
 
 @app.route("/")
@@ -480,12 +485,15 @@ def show_profile(user_id):
 		current_user_id = session["user_id"]
 		if user_of_interest.is_public: 
 			if pair_lookup(user_of_interest.user_id, current_user_id):
-				pass #display full profile, with option to directly message?
+				#display full profile, with option to directly message?
+				return render_template("public_profile_connected.html", user_of_interest=user_of_interest)
 			else:
-				pass #display full profile, with option to add 
+				#display full profile, with option to add 
+				return render_template("public_profile.html", user_of_interest=user_of_interest)
 		else:
 			if pair_lookup(user_of_interest.user_id, current_user_id):
-				pass #display full profile
+				#display full profile
+				return render_template("shared_private_profile.html", user_of_interest=user_of_interest)
 			else:
 				return render_template("profile_private.html", user_of_interest=user_of_interest)
 	else:
@@ -508,6 +516,12 @@ def request_connection(other_user_id):
 	current_user_id = session["user_id"]
 	#find way to store requests?
 	pass
+
+@app.route("/updates/<int:user_id>")
+def show_all_updates_for_user(user_id):
+	updates = all_updates_for_specific_user()
+
+	pass #return render_template 
 
 
 if __name__ == '__main__':
