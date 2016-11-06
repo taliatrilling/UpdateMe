@@ -23,7 +23,11 @@
 
 </form>
 
-<script src="https://code.jquery.com/jquery.js"></script>
+<script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous">
+</script>
 
 <script>
 
@@ -68,7 +72,7 @@ $("#password").on("change", function() {
       	$("#passwordwarning").html("Please only use alphanumeric characters in your password.");
 		return;
 		}}
-	$("#passwordwarning").html("Looks good!");
+	$("#passwordwarning").html("");
 });
 
 

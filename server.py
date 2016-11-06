@@ -6,7 +6,7 @@ from flask import (Flask, render_template, redirect, request, session, flash, js
 
 from flask_debugtoolbar import DebugToolbarExtension
 
-from model import User, Update, Comment, Pair, Message, connect_to_db, db
+from model import User, Update, Comment, Pair, Message, Request, connect_to_db, db
 
 from datetime import datetime
 
@@ -231,6 +231,42 @@ def all_updates_for_specific_user(user_id):
 	updates = Update.query.filter(Update.user_id == user_id).order_by(Update.posted_at).all()
 	return updates
 
+def add_connection_request(other_user_id):
+	"""Adds a connection request to the db"""
+
+	current_user_id = session["user_id"]
+	new_request = Request(requester_id=current_user_id, requestee_id=other_user_id)
+	db.session.add(new_request)
+	db.session.commit()
+	flash("Your request has been sent")
+
+def add_pair_to_db(user_connecting_with_id):
+	"""Adds a pair to the database, should only be called after a connection has been
+	requested by one user and accepted by the other"""
+
+	current_user_id = session["user_id"]
+	pair = Pair(user_1_id=user_connecting_with_id, user_2_id=current_user_id)
+	db.session.add(pair)
+	db.session.commit()
+	other_user_username = (Pair.query.filter(Pair.user_id == user_connecting_with_id).first()).username
+	flash("You have successfully connected with" + other_user_username)
+
+def get_connection_requests():
+	"""Fetches from the database any outstanding connection requests for the current user"""
+
+	current_user_id = session["user_id"]
+	current_requests = Request.query.filter(Request.requestee_id == current_user_id).all()
+	return current_requests
+
+def usernames_behind_connection_requests(current_requests):
+	"""For current requests, returns a list of usernames representing who requested connection"""
+
+	usernames = []
+	for request in current_requests:
+		username = (User.query.get(request.requester_id)).username
+		usernames.append(username)
+
+	return usernames
 
 #routes
 
@@ -238,8 +274,7 @@ def all_updates_for_specific_user(user_id):
 def index():
 	"""Home page route"""
 
-	return render_template("feed_all.html")
-	# return render_template("homepage.html")
+	return render_template("homepage.html")
 
 
 @app.route("/register")
@@ -519,7 +554,28 @@ def request_connection(other_user_id):
 	"""Request a connection with a specific user"""
 	
 	current_user_id = session["user_id"]
-	#find way to store requests?
+	if Request.query.filter(Request.requester_id == current_user_id, Request.requestee_id == other_user_id).first():
+		flash("You have already requested a connection with this user")
+		return redirect("/profile/" + str(other_user_id))
+
+	add_connection_request(other_user_id)
+	return redirect("/profile/" + str(other_user_id))
+
+@app.route("/review-connection-requests")
+def review_requests():
+	"""Displays information about requested connections involving the current user"""
+
+	current_requests = get_connection_requests()
+	usernames = usernames_behind_connection_requests(current_requests)
+
+	return render_template("connection_requests.html", current_requests=current_requests, usernames=usernames)
+
+@app.route("/approve-connection/<int:request_id>")
+def approve_request():
+	"""Takes in the information for a request a user has approved and calls the function to add the 
+	pair to the pairs db"""
+
+	#need to call add_pair_to_db(user_connecting_with_id)
 	pass
 
 

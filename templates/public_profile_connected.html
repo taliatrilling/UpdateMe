@@ -30,7 +30,11 @@
 
 {% endif %}
 
-<script src="https://code.jquery.com/jquery.js"></script>
+<script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous">
+</script>
 
 <script>
 
@@ -39,7 +43,7 @@ $("#message").on("change", function() {
 	if (input.length > 140) { 
 		$("#messagewarning").html("Please limit your message to 140 characters.");
 	}	else {
-		$("#messagewarning").html("Looks good!");
+		$("#messagewarning").html("");
 	}
 })
 

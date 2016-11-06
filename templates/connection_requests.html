@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Connection Requests{% endblock %}
+
+{% block content %}
+
+{% if current_requests|length == 0 %}
+
+	<h1>You have no current connection requests.</h1>
+
+{% else %}
+
+<h1>Pending requests:</h1>
+
+	{% for i in range(usernames|length) %}
+		<br><br><h2>{{ usernames[i] }} has requested to connect!</h2><br>
+		<h3><a href="/profile/{{ current_requests[i].requester_id }}">Check out their profile</a><br>
+			<a href="/approve-connection/{{ current_requests[i].request_id }}">Approve their request</a></h3>
+	{% endfor %}
+
+{% endif %}
+
+{% endblock %}

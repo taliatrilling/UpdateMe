@@ -1,11 +1,47 @@
 {% extends "base.html" %}
-{% block title %}Home{% endblock %}
+{% block title %}Feed{% endblock %}
 
 {% block content %}
 
-{% if "user_id" in session %}
 <h1>My Feed</h1>
-<h2><a href="/compose-update">Add an Update</a></h2>
-{% endif %}
+<button id="all">All</button>
+<button id="connections">My Connections</button>
+<div id="post"></div>
+<!-- <div id="connectionpost"></div> -->
+
+<script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous">
+</script>
+
+<script>
+
+
+//need logic to take into account if an update is showing up twice because it's in both categories...also 
+//need to stop button from repeatedly adding the content
+
+$("#all").on("click", function() {
+	$.get("/feed-all-json", function(results) {
+		for (var i=0; i < results["results"].length; i++) {
+			$("#post").append("<h1>" + results["results"][i][1] 
+				+ "</h1>" + "<h2> Posted by: " + results["results"][i][0] + "</h2>" 
+				+ results["results"][i].slice(2) + "<br>");
+		}
+	}
+)});
+
+$("#connections").on("click", function() {
+	$.get("/feed-connects-json", function(results) {
+		for (var i=0; i < results["results"].length; i++) {
+			$("#post").append("<h1>" + results["results"][i][1] 
+				+ "</h1>" + "<h2> Posted by: " + results["results"][i][0] + "</h2>" 
+				+ results["results"][i].slice(2) + "<br>");
+		}
+	}
+)});
+
+
+</script>
 
 {% endblock %}
