@@ -248,7 +248,9 @@ def add_pair_to_db(user_connecting_with_id):
 	pair = Pair(user_1_id=user_connecting_with_id, user_2_id=current_user_id)
 	db.session.add(pair)
 	db.session.commit()
-	other_user_username = (Pair.query.filter(Pair.user_id == user_connecting_with_id).first()).username
+	other_user_username = (User.query.filter(User.user_id == user_connecting_with_id).first()).username
+	Request.query.filter(Request.requester_id == user_connecting_with_id, Request.requestee_id == current_user_id).delete()
+	db.session.commit()
 	flash("You have successfully connected with" + other_user_username)
 
 def get_connection_requests():
@@ -549,6 +551,7 @@ def see_connections_feed():
 	feed_json = show_feed_connections()
 	return feed_json
 
+
 @app.route("/request-connection/<int:other_user_id>", methods=["POST"])
 def request_connection(other_user_id):
 	"""Request a connection with a specific user"""
@@ -561,6 +564,7 @@ def request_connection(other_user_id):
 	add_connection_request(other_user_id)
 	return redirect("/profile/" + str(other_user_id))
 
+
 @app.route("/review-connection-requests")
 def review_requests():
 	"""Displays information about requested connections involving the current user"""
@@ -570,13 +574,17 @@ def review_requests():
 
 	return render_template("connection_requests.html", current_requests=current_requests, usernames=usernames)
 
+
 @app.route("/approve-connection/<int:request_id>")
-def approve_request():
+def approve_request(request_id):
 	"""Takes in the information for a request a user has approved and calls the function to add the 
 	pair to the pairs db"""
 
-	#need to call add_pair_to_db(user_connecting_with_id)
-	pass
+	current_user_id = session["user_id"]
+	user_connecting_with_id = (Request.query.filter(Request.request_id == request_id).first()).requester_id
+	add_pair_to_db(user_connecting_with_id)
+	return redirect("/review-connection-requests")
+
 
 
 
