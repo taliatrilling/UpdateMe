@@ -2,3 +2,4 @@ env
 *secret*
 *.pyc
 .DS_Store
+*factory_set_up*
