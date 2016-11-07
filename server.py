@@ -190,12 +190,14 @@ def pair_lookup(user_1_id, user_2_id):
 def show_feed_all():
 	"""Show 20 most recent public updates"""
 
-	updates = Update.query.order_by(Update.posted_at).limit(20).all()
+	public_users = db.session.query(User.user_id).filter(User.is_public == True).all()
+	updates = Update.query.filter(Update.user_id.in_(public_users)).order_by(Update.posted_at).limit(20).all()
 	all_updates = []
 	for update in updates:
 		username = (User.query.get(update.user_id)).username
 		posted = datetime.strftime(update.posted_at, "%-H:%M UTC on %B %-d, %Y")
-		all_updates.append([username, update.update_body, posted])
+		user_id = (User.query.get(update.user_id)).user_id
+		all_updates.append([username, update.update_body, posted, user_id])
 	return jsonify({"results": all_updates})
 
 def all_connections_for_current_user():
@@ -222,7 +224,8 @@ def show_feed_connections():
 	for update in updates:
 		username = (User.query.get(update.user_id)).username
 		posted = datetime.strftime(update.posted_at, "%-H:%M UTC on %B %-d, %Y")
-		all_updates.append([username, update.update_body, posted])
+		user_id = (User.query.get(update.user_id)).user_id
+		all_updates.append([username, update.update_body, posted, user_id])
 	return jsonify({"results": all_updates})
 
 def all_updates_for_specific_user(user_id):
