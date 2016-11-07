@@ -23,7 +23,7 @@ class User(db.Model):
 	def __repr__(self):
 		"""Provides useful representation of an instance when printed"""
 
-		return "<User user_id=%d username=%s>" % (self.user_id, self.username)
+		return "<User user_id=%s username=%s>" % (self.user_id, self.username)
 
 
 class Update(db.Model):
