@@ -2,7 +2,7 @@ from model import User, Update, Comment, Pair, Message, Request, connect_to_db, 
 import factory
 from faker import Factory as FakerFactory
 from datetime import datetime
-from server import app
+from server import app, pair_lookup
 import random
 
 #see docs for Faker at https://faker.readthedocs.io/en/latest/
@@ -31,5 +31,18 @@ def add_updates():
 			posted_at=datetime.now())
 		db.session.add(update)
 		db.session.commit()
+
+def add_connections():
+	"""Adds fake user connections to the system"""
+
+	current_users = db.session.query(User.user_id).all()
+	for i in range(2000):
+		user1 = random.choice(current_users)
+		user2 = random.choice(current_users)
+		if user1 != user2 and not pair_lookup(user1, user2):
+			pair = Pair(user_1_id=user1, user_2_id=user2)
+			db.session.add(pair)
+			db.session.commit()
+
 
 
