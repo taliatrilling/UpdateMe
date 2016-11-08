@@ -600,6 +600,8 @@ def approve_request(request_id):
 	return redirect("/review-connection-requests")
 
 
+##to do: add way to comment directly from main feed? add links from profile pages to specific update pages?
+
 
 if __name__ == '__main__':
 	app.debug = True

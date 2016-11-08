@@ -4,8 +4,12 @@ from flask_sqlalchemy import SQLAlchemy
 
 from datetime import datetime
 
+from passlib.hash import bcrypt
+
 db = SQLAlchemy()
 
+
+# code help on passwords by X-Istence from http://stackoverflow.com/a/33717279
 
 class User(db.Model):
 	"""Information associated with an individual user on the site"""
@@ -19,6 +23,20 @@ class User(db.Model):
 	is_public = db.Column(db.Boolean, nullable=False)
 	#profile_picture
 	#user_preferences ? 
+
+	def __init__(self, username, password, joined_at, is_public):
+		"""Passes in appropriate parameters to user instance, and creates 
+		encrypted hash of password for database"""
+
+		self.username = username
+		self.password = bcrypt.encrypt(password)
+		self.joined_at = joined_at
+		self.is_public = is_public
+
+	def validate_password(self, password):
+		"""Verifies password hash, returns True or False"""
+
+		return bcrypt.verify(password, self.password)
 
 	def __repr__(self):
 		"""Provides useful representation of an instance when printed"""
