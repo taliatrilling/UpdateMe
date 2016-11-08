@@ -7,6 +7,8 @@
 <button id="all">All</button>
 <button id="connections">My Connections</button>
 <div id="post"></div>
+<input type="hidden" id="offset" value="0">
+<input type="hidden" id="connectionoffset" value="0">
 <!-- <div id="connectionpost"></div> -->
 
 <script
@@ -21,18 +23,24 @@
 //need logic to take into account if an update is showing up twice because it's in both categories...also 
 //need to stop button from repeatedly adding the content
 
+
 $("#all").on("click", function() {
-	$.get("/feed-all-json", function(results) {
+	var currentOffset = parseInt($("#offset").val());
+	$("#post").html("");
+	$.get("/feed-all-json", {"offset": currentOffset}, function(results) {
 		for (var i=0; i < results["results"].length; i++) {
 			$("#post").append("<h1>" + results["results"][i][1] 
 				+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3) +
 				"''>" + results["results"][i][0] + "</a> </h2>" 
 				+ results["results"][i].slice(2,3) + "<br>");
 		}
+	$("#offset").val(currentOffset + 20)
 	}
 )});
 
 $("#connections").on("click", function() {
+	var currentOffset = parseInt($("#connectionoffset").val());
+	$("#post").html("");
 	$.get("/feed-connects-json", function(results) {
 		for (var i=0; i < results["results"].length; i++) {
 			$("#post").append("<h1>" + results["results"][i][1] 
@@ -40,6 +48,7 @@ $("#connections").on("click", function() {
 				"''>" + results["results"][i][0] + "</a> </h2>"
 				+ results["results"][i].slice(2,3) + "<br>");
 		}
+	$("#connectionoffset").val(currentOffset + 20)
 	}
 )});
 

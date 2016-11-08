@@ -15,8 +15,9 @@ def add_users():
 	"""Adds fake users to db, in theory should add 500 but usually fails before it can reach 500 
 	because the system will try to use the same fake username"""
 
-	for i in range(500):
-		user = User(username=faker.user_name(), password=faker.word(), 
+	for i in range(1000):
+		user = User(username=(faker.first_name() + faker.pystr(min_chars=3, max_chars=7)), 
+			password=faker.password(length=10, special_chars=False, digits=True, upper_case=True, lower_case=True), 
 			joined_at=faker.date_time_this_year(before_now=True, after_now=False, tzinfo=None),
 			is_public=faker.boolean())
 		db.session.add(user)

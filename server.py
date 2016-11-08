@@ -187,11 +187,11 @@ def pair_lookup(user_1_id, user_2_id):
 	if pair: 
 		return pair.pair_id
 
-def show_feed_all():
+def show_feed_all(offset_num):
 	"""Show 20 most recent public updates"""
 
 	public_users = db.session.query(User.user_id).filter(User.is_public == True).all()
-	updates = Update.query.filter(Update.user_id.in_(public_users)).order_by(Update.posted_at).limit(20).all()
+	updates = Update.query.filter(Update.user_id.in_(public_users)).order_by(Update.posted_at).limit(20).offset(offset_num).all()
 	all_updates = []
 	for update in updates:
 		username = (User.query.get(update.user_id)).username
@@ -214,12 +214,12 @@ def all_connections_for_current_user():
 	return pairs_with
 
 		
-def show_feed_connections():
+def show_feed_connections(offset_num):
 	"""Show 20 most recent updates created by connections"""
 	
 	current_user_id = session["user_id"]
 	pairs_with = all_connections_for_current_user()
-	updates = Update.query.filter(Update.user_id.in_(pairs_with)).order_by(Update.posted_at).limit(20).all()
+	updates = Update.query.filter(Update.user_id.in_(pairs_with)).order_by(Update.posted_at).limit(20).offset(offset_num).all()
 	all_updates = []
 	for update in updates:
 		username = (User.query.get(update.user_id)).username
@@ -272,6 +272,7 @@ def usernames_behind_connection_requests(current_requests):
 		usernames.append(username)
 
 	return usernames
+
 
 #routes
 
@@ -497,7 +498,9 @@ def check_username():
 @app.route("/feed-all-json")
 def see_all_feed():
 	"""Calls the function that returns the json for 20 most recent public updates"""
-	feed_json = show_feed_all()
+	
+	offset = request.args.get("offset")
+	feed_json = show_feed_all(offset)
 	return feed_json
 
 
@@ -551,7 +554,8 @@ def see_connections_feed():
 	"""Calls and returns result of logic function querying 20 most recent 
 	updates from connections only"""
 
-	feed_json = show_feed_connections()
+	offset = request.args.get("connectionoffset")
+	feed_json = show_feed_connections(offset)
 	return feed_json
 
 
