@@ -407,7 +407,13 @@ def show_inbox():
 	if "user_id" in session:
 		user_id = session["user_id"]
 		threads = check_inbox(user_id)
-		return render_template("inbox.html", threads=threads)
+		users_talking_to = {}
+		for thread in threads:
+			user = User.query.filter(User.user_id == thread).first()
+			username = user.username
+			connection_id = pair_lookup(user_id, thread)
+			users_talking_to[username] = connection_id
+		return render_template("inbox.html", users_talking_to=users_talking_to)
 	else:
 		flash("Please sign in to view your inbox")
 		return redirect("/")

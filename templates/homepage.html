@@ -4,11 +4,13 @@
 {% block content %}
 
 <h1>My Feed</h1>
-<button id="all">All</button>
-<button id="connections">My Connections</button>
-<div id="post"></div>
-<input type="hidden" id="offset" value="0">
-<input type="hidden" id="connectionoffset" value="0">
+<ul class="nav nav-tabs">
+	<button id="all">All</button>
+	<button id="connections">My Connections</button>
+	<div id="post"></div>
+	<input type="hidden" id="offset" value="0">
+	<input type="hidden" id="connectionoffset" value="0">
+</ul>
 <!-- <div id="connectionpost"></div> -->
 
 <script
@@ -25,6 +27,7 @@
 
 
 $("#all").on("click", function() {
+	$("#connectionoffset").val(0)
 	var currentOffset = parseInt($("#offset").val());
 	$("#post").html("");
 	$.get("/feed-all-json", {"offset": currentOffset}, function(results) {
@@ -39,6 +42,7 @@ $("#all").on("click", function() {
 )});
 
 $("#connections").on("click", function() {
+	$("#offset").val(0)
 	var currentOffset = parseInt($("#connectionoffset").val());
 	$("#post").html("");
 	$.get("/feed-connects-json", function(results) {

@@ -6,9 +6,9 @@
 
 <h2><a href="/compose-message">Compose new message thread</a>
 
-{% for thread in threads %}
+{% for key, value in users_talking_to.items() %}
 
-<h2><a href=" ">Conversation with {{ thread }}</a>
+<h2><a href="/message/{{ value }}">Conversation with {{ key }}</a>
 
 {% endfor %}
 
