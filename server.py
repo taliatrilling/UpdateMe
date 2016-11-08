@@ -191,7 +191,7 @@ def show_feed_all(offset_num):
 	"""Show 20 most recent public updates"""
 
 	public_users = db.session.query(User.user_id).filter(User.is_public == True).all()
-	updates = Update.query.filter(Update.user_id.in_(public_users)).order_by(Update.posted_at).limit(20).offset(offset_num).all()
+	updates = Update.query.filter(Update.user_id.in_(public_users)).order_by(Update.posted_at.desc()).limit(20).offset(offset_num).all()
 	all_updates = []
 	for update in updates:
 		username = (User.query.get(update.user_id)).username
@@ -219,7 +219,7 @@ def show_feed_connections(offset_num):
 	
 	current_user_id = session["user_id"]
 	pairs_with = all_connections_for_current_user()
-	updates = Update.query.filter(Update.user_id.in_(pairs_with)).order_by(Update.posted_at).limit(20).offset(offset_num).all()
+	updates = Update.query.filter(Update.user_id.in_(pairs_with)).order_by(Update.posted_at.desc()).limit(20).offset(offset_num).all()
 	all_updates = []
 	for update in updates:
 		username = (User.query.get(update.user_id)).username
