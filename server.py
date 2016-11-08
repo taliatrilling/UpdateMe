@@ -374,17 +374,38 @@ def post_update():
 def show_specific_update(update_id):
 	"""Shows a specific update as associated with its update id"""
 
-	update = Update.query.get(update_id)
-	text = update.update_body
-	user_id = update.user_id
-	user = User.query.get(user_id)
-	username = user.username
-	time_date = datetime.strftime(update.posted_at, "%-H:%M UTC on %B %-d, %Y")
-	user_comments = display_comments(update_id)
+	if "user_id" in session:
+		current_user_id = session["user_id"]
+		update = Update.query.get(update_id)
+		text = update.update_body
+		user_id = update.user_id
+		user = User.query.get(user_id)
+		if user.is_public:
+			username = user.username
+			time_date = datetime.strftime(update.posted_at, "%-H:%M UTC on %B %-d, %Y")
+			user_comments = display_comments(update_id)
 
-	return render_template("specific_update.html", username=username, text=text, 
-		time_date=time_date, update_id=update_id, user_comments=user_comments)
+			return render_template("specific_update.html", username=username, text=text, 
+				time_date=time_date, update_id=update_id, user_comments=user_comments, user_id=user_id)
+		else:
+			if pair_lookup(user_id, current_user_id):
+				username = user.username
+				time_date = datetime.strftime(update.posted_at, "%-H:%M UTC on %B %-d, %Y")
+				user_comments = display_comments(update_id)
 
+				return render_template("specific_update.html", username=username, text=text, 
+					time_date=time_date, update_id=update_id, user_comments=user_comments, user_id=user_id)
+			else:
+				flash("You do not have access to this user's updates.")
+				return redirect("/")
+	else:
+		if user.is_public:
+			username = user.username
+			time_date = datetime.strftime(update.posted_at, "%-H:%M UTC on %B %-d, %Y")
+			user_comments = display_comments(update_id)
+
+			return render_template("specific_update.html", username=username, text=text, 
+				time_date=time_date, update_id=update_id, user_comments=user_comments, user_id=user_id)
 
 @app.route("/add-comment/<int:update_id>", methods=["POST"])
 def add_comment(update_id):
@@ -422,6 +443,7 @@ def show_inbox():
 
 @app.route("/message/<int:pair_id>")
 def show_message(pair_id):
+	"""For a pair, displays the messages between the two users (if any)"""
 	
 	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
 	other_user_id = which_pair_by_active_user(pair_id)
