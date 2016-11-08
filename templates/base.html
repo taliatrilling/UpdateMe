@@ -13,7 +13,7 @@
     			</div>
     		<ul class="nav navbar-nav">
     			{% if "user_id" in session %}
-					<li><a href="/profile/{{ session['user_id'] }}">{{ session["username"]}}'s Profile</li>
+					<li><a href="/profile/{{ session['user_id'] }}">{{ session["username"]}}'s Profile</a></li>
 					<li><a href="/logout">Logout</a></li>
 					<li><a href="/compose-update">Compose an Update</a></li>
 					<li><a href="/compose-message">Compose a Message</a></li>
