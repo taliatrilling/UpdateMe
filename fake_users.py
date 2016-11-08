@@ -27,7 +27,7 @@ def add_updates():
 	"""Adds fake updates to the system"""
 
 	current_users = db.session.query(User.user_id).all()
-	for i in range(500):
+	for i in range(5000):
 		update = Update(user_id=random.choice(current_users), update_body=faker.text(max_nb_chars=140), 
 			posted_at=datetime.now())
 		db.session.add(update)

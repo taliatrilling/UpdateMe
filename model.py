@@ -18,7 +18,7 @@ class User(db.Model):
 
 	user_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
 	username = db.Column(db.String(20), nullable=False, unique=True)
-	password = db.Column(db.String(20), nullable=False)
+	password = db.Column(db.String(80), nullable=False)
 	joined_at = db.Column(db.DateTime, nullable=False)
 	is_public = db.Column(db.Boolean, nullable=False)
 	#profile_picture

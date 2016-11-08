@@ -48,9 +48,10 @@ def add_user(username, password, is_public):
 def check_user_credentials(username, password):
 	"""Checks the validity of a username and password"""
 
-	user = User.query.filter(User.username == username, User.password == password).first()
+	user = User.query.filter(User.username == username).first()
+	password_hashed = User.validate_password(user, password)
 
-	if user:
+	if password_hashed:
 		user_id = user.user_id
 		username = user.username
 		session["user_id"] = user_id
@@ -197,7 +198,7 @@ def show_feed_all(offset_num):
 		username = (User.query.get(update.user_id)).username
 		posted = datetime.strftime(update.posted_at, "%-H:%M UTC on %B %-d, %Y")
 		user_id = (User.query.get(update.user_id)).user_id
-		all_updates.append([username, update.update_body, posted, user_id])
+		all_updates.append([username, update.update_body, posted, user_id, update.update_id])
 	return jsonify({"results": all_updates})
 
 def all_connections_for_current_user():
@@ -225,7 +226,7 @@ def show_feed_connections(offset_num):
 		username = (User.query.get(update.user_id)).username
 		posted = datetime.strftime(update.posted_at, "%-H:%M UTC on %B %-d, %Y")
 		user_id = (User.query.get(update.user_id)).user_id
-		all_updates.append([username, update.update_body, posted, user_id])
+		all_updates.append([username, update.update_body, posted, user_id, update.update_id])
 	return jsonify({"results": all_updates})
 
 def all_updates_for_specific_user(user_id):
