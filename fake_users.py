@@ -19,7 +19,7 @@ def add_users():
 		user = User(username=(faker.first_name() + faker.pystr(min_chars=3, max_chars=7)), 
 			password=faker.password(length=10, special_chars=False, digits=True, upper_case=True, lower_case=True), 
 			joined_at=faker.date_time_this_year(before_now=True, after_now=False, tzinfo=None),
-			is_public=faker.boolean())
+			is_public=faker.boolean(), rounds=4)
 		db.session.add(user)
 		db.session.commit()
 

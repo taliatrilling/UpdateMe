@@ -8,7 +8,6 @@ from passlib.hash import bcrypt
 
 db = SQLAlchemy()
 
-
 # code help on passwords by X-Istence from http://stackoverflow.com/a/33717279
 
 class User(db.Model):
@@ -24,12 +23,16 @@ class User(db.Model):
 	#profile_picture
 	#user_preferences ? 
 
-	def __init__(self, username, password, joined_at, is_public):
+	def __init__(self, username, password, joined_at, is_public, rounds=None):
 		"""Passes in appropriate parameters to user instance, and creates 
 		encrypted hash of password for database"""
 
 		self.username = username
-		self.password = bcrypt.encrypt(password)
+		#to make seeding db faster with fake data:
+		if rounds:
+			self.password = bcrypt.encrypt(password, rounds=rounds)
+		else:
+			self.password = bcrypt.encrypt(password)
 		self.joined_at = joined_at
 		self.is_public = is_public
 

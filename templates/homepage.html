@@ -4,14 +4,18 @@
 {% block content %}
 
 <h1>My Feed</h1>
-<ul class="nav nav-tabs">
-	<button id="all">All</button>
-	<button id="connections">My Connections</button>
+<div class="container-fluid">
+<ul class="nav nav-tabs nav-justified" role="tablist">
+	<button role="presentation" id="all" data-toggle="tab">Updates from All Users</button>
+	<button role="presentation" id="connections" data-toggle="tab">Updates from Your Connections</button>
 	<div id="post"></div>
+	<br><br><button id="next">More Updates</button>
+	<br><br><button id="nextconnect">More Updates</button>
 	<input type="hidden" id="offset" value="0">
 	<input type="hidden" id="connectionoffset" value="0">
 </ul>
-<!-- <div id="connectionpost"></div> -->
+</div>
+
 
 <script
   src="https://code.jquery.com/jquery-3.1.1.min.js"
@@ -19,11 +23,36 @@
   crossorigin="anonymous">
 </script>
 
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
 <script>
 
 
-$("#all").on("click", function() {
-	$("#connectionoffset").val(0)
+
+$("#all").on("click", function(evt) {
+	$("#connectionoffset").val(0);
+	var currentOffset = parseInt($("#offset").val());
+	$("#post").html("");
+	$.get("/feed-all-json", {"offset": 0}, function(results) {
+		for (var i=0; i < results["results"].length; i++) {
+			$("#post").append("<h1>" + results["results"][i][1] 
+				+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3,4) +
+				"''>" + results["results"][i][0] + "</a> </h2>" 
+				+ results["results"][i].slice(2,3) + " <a href='/update/" + results["results"][i].slice(4) 
+				+ "'>Link to Update</a>" + "<br>");
+		}
+	$("#offset").val(currentOffset + 20);
+	} 
+);
+});
+
+$("#next").hide();
+$("#all").click(function() {
+	$("#next").show();
+	$("#nextconnect").hide();
+});
+
+$("#next").on("click", function(evt) {
 	var currentOffset = parseInt($("#offset").val());
 	$("#post").html("");
 	$.get("/feed-all-json", {"offset": currentOffset}, function(results) {
@@ -34,9 +63,18 @@ $("#all").on("click", function() {
 				+ results["results"][i].slice(2,3) + " <a href='/update/" + results["results"][i].slice(4) 
 				+ "'>Link to Update</a>" + "<br>");
 		}
-	$("#offset").val(currentOffset + 20)
-	}
-)});
+		$("#offset").val(currentOffset + 20);
+	} 
+);
+});
+
+$("#nextconnect").hide();
+$("#connections").click(function() {
+	$("#nextconnect").show();
+	$("#next").hide();
+});
+
+//still need to fix python code and this code to do offset
 
 $("#connections").on("click", function() {
 	$("#offset").val(0)
