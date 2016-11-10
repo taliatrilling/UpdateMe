@@ -40,9 +40,6 @@ def add_user(username, password, is_public):
 	db.session.commit()
 	user_id = user.user_id
 	username = user.username
-	session["user_id"] = user_id
-	session["username"] = username
-	flash("You have successfully registered, %s." % username)
 	return user_id
 
 def check_user_credentials(username, password):
@@ -54,12 +51,8 @@ def check_user_credentials(username, password):
 	if password_hashed:
 		user_id = user.user_id
 		username = user.username
-		session["user_id"] = user_id
-		session["username"] = username
-		flash("You were successfully signed in, %s" % username)
-		return True
+		return user_id
 	else:
-		flash("Your username or password was invalid, please try again.")
 		return False
 
 def submit_update(user_id, body):
@@ -304,11 +297,14 @@ def register_success():
 #change to 0 and 1 
 	if is_public == "1":
 		public = 1
-		add_user(username, password, 1)
+		user_id = add_user(username, password, 1)
 	if is_public == "2":
 		public = 2
-		add_user(username, password, 2)
+		user_id = add_user(username, password, 2)
 
+	session["user_id"] = user_id
+	session["username"] = username
+	flash("You have successfully registered, %s." % username)
 	return redirect("/")
 
 
@@ -328,11 +324,15 @@ def login_success():
 	username = request.form.get("username")
 	password = request.form.get("password")	
 
-	success = check_user_credentials(username, password)
+	user_id = check_user_credentials(username, password)
+	session["user_id"] = user_id
+	session["username"] = username
 
 	if success:
+		flash("You were successfully signed in, %s" % username)
 		return redirect("/")
 	if not success:
+		flash("Your username or password was invalid, please try again.")
 		return redirect("/login")
 
 

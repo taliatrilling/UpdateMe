@@ -151,12 +151,8 @@ class Request(db.Model):
 
 
 def connect_to_db(app):
-	"""Connects the PostgreSQL database to the Flask app, defaults to use the 
-	primary DB, but allows for a different argument to be passed in for 
-	testing purposes"""
+	"""Connects the PostgreSQL database to the Flask app"""
 
-	#uri="postgresql:///twitterclone"
-	# app.config["SQLALCHEMY_DATEBASE_URI"] = uri 
 	app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql:///twitterclone"
 	db.app = app
 	db.init_app(app)
