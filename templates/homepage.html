@@ -9,8 +9,8 @@
 	<button role="presentation" id="all" data-toggle="tab">Updates from All Users</button>
 	<button role="presentation" id="connections" data-toggle="tab">Updates from Your Connections</button>
 	<div id="post"></div>
-	<br><br><button id="next">More Updates</button>
-	<br><br><button id="nextconnect">More Updates</button>
+	<br><button id="next">More Updates</button>
+	<br><button id="nextconnect">More Updates</button>
 	<input type="hidden" id="offset" value="0">
 	<input type="hidden" id="connectionoffset" value="0">
 </ul>
@@ -27,6 +27,13 @@
 
 <script>
 
+
+
+$("#next").hide();
+$("#all").click(function() {
+	$("#next").show();
+	$("#nextconnect").hide();
+});
 
 
 $("#all").on("click", function(evt) {
@@ -46,11 +53,6 @@ $("#all").on("click", function(evt) {
 );
 });
 
-$("#next").hide();
-$("#all").click(function() {
-	$("#next").show();
-	$("#nextconnect").hide();
-});
 
 $("#next").on("click", function(evt) {
 	var currentOffset = parseInt($("#offset").val());
@@ -74,13 +76,13 @@ $("#connections").click(function() {
 	$("#next").hide();
 });
 
-//still need to fix python code and this code to do offset
+
 
 $("#connections").on("click", function() {
 	$("#offset").val(0)
 	var currentOffset = parseInt($("#connectionoffset").val());
 	$("#post").html("");
-	$.get("/feed-connects-json", function(results) {
+	$.get("/feed-connects-json", {"offset": 0}, function(results) {
 		for (var i=0; i < results["results"].length; i++) {
 			$("#post").append("<h1>" + results["results"][i][1] 
 				+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3,4) +
@@ -91,6 +93,22 @@ $("#connections").on("click", function() {
 	$("#connectionoffset").val(currentOffset + 20)
 	}
 )});
+
+$("#nextconnect").on("click", function(evt) {
+	var currentOffset = parseInt($("#offset").val());
+	$("#post").html("");
+	$.get("/feed-connects-json", {"offset": currentOffset}, function(results) {
+		for (var i=0; i < results["results"].length; i++) {
+			$("#post").append("<h1>" + results["results"][i][1] 
+				+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3,4) +
+				"''>" + results["results"][i][0] + "</a> </h2>" 
+				+ results["results"][i].slice(2,3) + " <a href='/update/" + results["results"][i].slice(4) 
+				+ "'>Link to Update</a>" + "<br>");
+		}
+		$("#connectionoffset").val(currentOffset + 20);
+	} 
+);
+});
 
 
 </script>
