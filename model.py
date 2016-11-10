@@ -150,10 +150,31 @@ class Request(db.Model):
 				% (self.request_id, self.requester_id, self.requestee_id))
 
 
-def connect_to_db(app):
+def fake_test_data():
+	"""Creates sample data for unittests to use"""
+
+	user1 = User(username="shepard", password="password123", joined_at=datetime.now(), is_public=True)
+	user2 = User(username="garrus", password="pass123", joined_at=datetime.now(), is_public=False)
+	user3 = User(username="wrex", password="pword", joined_at=datetime.now(), is_public=True)
+	user4 = User(username="liara", password="passpass", joined_at=datetime.now(), is_public=False)
+
+	update1 = Update(user_id=2, update_body="just in the middle of some calibrations", posted_at=datetime.now())
+	update2 = Update(user_id=1, update_body="anyone want to open this bottle of serrice ice I got for Chakwas with me?", posted_at=datetime.now())
+	update3= Update(user_id=4, update_body="please stop calling me the shadow broker, I'm totally not her--I mean, them...", posted_at=datetime.now())
+
+	comment1 = Comment(update_id=2, user_id=3, comment_body="Shepard.", posted_at=datetime.now())
+	comment2 = Comment(update_id=2, user_id=1, comment_body="Wrex.", posted_at=datetime.now())
+	comment3 = Comment(update_id=2, user_id=2, comment_body="you guys are weird...", posted_at=datetime.now())
+
+	db.session.add_all([user1, user2, user3, user4, update1, update2, update3,
+		comment1, comment2, comment3])
+	db.session.commit()
+
+
+def connect_to_db(app, uri="postgresql:///twitterclone"):
 	"""Connects the PostgreSQL database to the Flask app"""
 
-	app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql:///twitterclone"
+	app.config['SQLALCHEMY_DATABASE_URI'] = uri
 	db.app = app
 	db.init_app(app)
 

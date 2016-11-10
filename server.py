@@ -63,6 +63,8 @@ def submit_update(user_id, body):
 	db.session.add(update)
 	db.session.commit()
 
+	return update.update_id
+
 def submit_comment(user_id, update_id, body):
 	"""Creates a comment object and adds it to the database"""
 
@@ -71,6 +73,8 @@ def submit_comment(user_id, update_id, body):
 
 	db.session.add(comment)
 	db.session.commit()
+
+	return comment.comment_id
 
 def display_comments(update_id):
 	"""Displays all existing comments on an update"""
