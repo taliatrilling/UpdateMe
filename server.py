@@ -165,15 +165,14 @@ def which_pair_by_active_user(pair_id):
 		other_user = User.query.get(pair.user_1_id)
 		return other_user.user_id
 
-def submit_message_to_db(recipient_id, message_body):
+def submit_message_to_db(user_id, recipient_id, message_body):
 	"""Adds a message instance to the db"""
-
-	user_id = session["user_id"]
 
 	message = Message(owner_id=user_id, recipient_id=recipient_id,
 		sent_at=datetime.now(), message_body=message_body)
 	db.session.add(message)
 	db.session.commit()
+	return message.msg_id
 
 def pair_lookup(user_1_id, user_2_id):
 	"""For two users, finds the pair_id for the connection (if exists)"""
@@ -195,12 +194,11 @@ def show_feed_all(offset_num):
 		posted = datetime.strftime(update.posted_at, "%-H:%M UTC on %B %-d, %Y")
 		user_id = (User.query.get(update.user_id)).user_id
 		all_updates.append([username, update.update_body, posted, user_id, update.update_id])
-	return jsonify({"results": all_updates})
+	return all_updates
 
-def all_connections_for_current_user():
+def all_connections_for_current_user(current_user_id):
 	"""Used to show feed connections, for the current user returns a list of user_ids connected with"""
 
-	current_user_id = session["user_id"]
 	pairs_in = Pair.query.filter((Pair.user_1_id == current_user_id) | (Pair.user_2_id == current_user_id)).all()
 	pairs_with = []
 	for pair in pairs_in:
@@ -211,11 +209,10 @@ def all_connections_for_current_user():
 	return pairs_with
 
 		
-def show_feed_connections(offset_num):
+def show_feed_connections(offset_num, current_user_id):
 	"""Show 20 most recent updates created by connections"""
 	
-	current_user_id = session["user_id"]
-	pairs_with = all_connections_for_current_user()
+	pairs_with = all_connections_for_current_user(current_user_id)
 	updates = Update.query.filter(Update.user_id.in_(pairs_with)).order_by(Update.posted_at.desc()).limit(20).offset(offset_num).all()
 	all_updates = []
 	for update in updates:
@@ -223,7 +220,7 @@ def show_feed_connections(offset_num):
 		posted = datetime.strftime(update.posted_at, "%-H:%M UTC on %B %-d, %Y")
 		user_id = (User.query.get(update.user_id)).user_id
 		all_updates.append([username, update.update_body, posted, user_id, update.update_id])
-	return jsonify({"results": all_updates})
+	return all_updates
 
 def all_updates_for_specific_user(user_id):
 	"""Returns a list of update objects represent the updates a user has posted"""
@@ -491,7 +488,7 @@ def submit_message():
 	recipient = request.form.get("chosen-recipient")
 	recipient_id = int(recipient)
 
-	submit_message_to_db(recipient_id, message_body)
+	submit_message_to_db(user_id, recipient_id, message_body)
 
 	pair = pair_lookup(user_id, recipient_id)
 
@@ -533,7 +530,7 @@ def see_all_feed():
 	
 	offset = request.args.get("offset")
 	feed_json = show_feed_all(offset)
-	return feed_json
+	return jsonify({"results": feed_json})
 
 
 @app.route("/search-results")
@@ -586,9 +583,10 @@ def see_connections_feed():
 	"""Calls and returns result of logic function querying 20 most recent 
 	updates from connections only"""
 
+	user_id = session["user_id"]
 	offset = request.args.get("connectionoffset")
-	feed_json = show_feed_connections(offset)
-	return feed_json
+	feed_json = show_feed_connections(offset, user_id)
+	return jsonify({"results": feed_json})
 
 
 @app.route("/request-connection/<int:other_user_id>", methods=["POST"])

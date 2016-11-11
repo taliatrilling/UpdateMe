@@ -3,7 +3,7 @@ import server as s
 from model import User, Update, Comment, Pair, Message, Request, connect_to_db, db, fake_test_data
 import unittest
 from flask_sqlalchemy import SQLAlchemy 
-from flask import (Flask, render_template, redirect, request, session, flash, jsonify)
+# from flask import (Flask, render_template, redirect, request, session, flash, jsonify)
 
 
 class LogicTestCases(unittest.TestCase):
@@ -60,14 +60,40 @@ class LogicTestCases(unittest.TestCase):
 		"sent at": "0:15 UTC on November 11, 2016", "read": False}}
 		self.assertEqual(s.get_message_history(1), messages)
 
+	def test_which_pair_by_active_user(self):
+		pass #code needs to be refactored because refers to session
+		# self.assertEqual(s.which_pair_by_active_user(1), 
+
+	def test_submit_message_to_db(self):
+		self.assertEqual(s.submit_message_to_db(3, 1, "Shepard."), 3)
+		self.assertTrue(Message.query.filter(Message.msg_id == 3, Message.message_body == "Shepard.").first())
+
+	def test_pair_lookup_exists(self):
+		self.assertEqual(s.pair_lookup(1, 2), 1)
+
+	def test_pair_lookup_does_not_exist(self):
+		self.assertIsNone(s.pair_lookup(4, 2))
+
+	def test_show_feed_all(self):
+		all_updates = [[u"shepard", u"anyone want to open this bottle of serrice ice I got for Chakwas with me?", "0:02 UTC on November 11, 2016", 1, 2]]
+		self.assertEqual(s.show_feed_all(0), all_updates)
+
+	def test_all_connections_for_current_user(self):
+		
+
 
 	def tearDown(self):
 		db.session.close()
 		db.drop_all()
 
+#[u"liara", u"please stop calling me the shadow broker, I'm totally not her--I mean, them...", "0:02 UTC on November 11, 2016", 4, 3]
+#[u"garrus", u"just in the middle of some calibrations", "0:02 UTC on November 11, 2016", 2, 1]
 
 class RouteTestCases(unittest.TestCase):
 	pass
+	# 	#to set up Flask route testing:
+	# self.client = server.app.test_client()
+	# server.app.config['TESTING'] = True
 
 if __name__ == '__main__':
 	unittest.main()
