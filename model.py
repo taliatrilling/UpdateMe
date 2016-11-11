@@ -153,21 +153,30 @@ class Request(db.Model):
 def fake_test_data():
 	"""Creates sample data for unittests to use"""
 
-	user1 = User(username="shepard", password="password123", joined_at=datetime.now(), is_public=True)
-	user2 = User(username="garrus", password="pass123", joined_at=datetime.now(), is_public=False)
-	user3 = User(username="wrex", password="pword", joined_at=datetime.now(), is_public=True)
-	user4 = User(username="liara", password="passpass", joined_at=datetime.now(), is_public=False)
+	user1 = User(username="shepard", password="password123", joined_at=datetime(2016, 11, 11, 0, 0, 31, 645845), is_public=True)
+	user2 = User(username="garrus", password="pass123", joined_at=datetime(2016, 11, 11, 0, 0, 31, 645845), is_public=False)
+	user3 = User(username="wrex", password="pword", joined_at=datetime(2016, 11, 11, 0, 0, 31, 645845), is_public=True)
+	user4 = User(username="liara", password="passpass", joined_at=datetime(2016, 11, 11, 0, 0, 31, 645845), is_public=False)
 
-	update1 = Update(user_id=2, update_body="just in the middle of some calibrations", posted_at=datetime.now())
-	update2 = Update(user_id=1, update_body="anyone want to open this bottle of serrice ice I got for Chakwas with me?", posted_at=datetime.now())
-	update3= Update(user_id=4, update_body="please stop calling me the shadow broker, I'm totally not her--I mean, them...", posted_at=datetime.now())
+	update1 = Update(user_id=2, update_body="just in the middle of some calibrations", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
+	update2 = Update(user_id=1, update_body="anyone want to open this bottle of serrice ice I got for Chakwas with me?", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
+	update3= Update(user_id=4, update_body="please stop calling me the shadow broker, I'm totally not her--I mean, them...", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
 
-	comment1 = Comment(update_id=2, user_id=3, comment_body="Shepard.", posted_at=datetime.now())
-	comment2 = Comment(update_id=2, user_id=1, comment_body="Wrex.", posted_at=datetime.now())
-	comment3 = Comment(update_id=2, user_id=2, comment_body="you guys are weird...", posted_at=datetime.now())
+	comment1 = Comment(update_id=2, user_id=3, comment_body="Shepard.", posted_at=datetime(2016, 11, 11, 0, 2, 45, 185511))
+	comment2 = Comment(update_id=2, user_id=1, comment_body="Wrex.", posted_at=datetime(2016, 11, 11, 0, 2, 45, 185511))
+	comment3 = Comment(update_id=2, user_id=2, comment_body="you guys are weird...", posted_at=datetime(2016, 11, 11, 0, 2, 45, 185511))
+
+	message1 = Message(owner_id=1, recipient_id=2, sent_at=datetime(2016, 11, 11, 0, 13, 47, 182798), message_body="up for another contest on the citadel later?")
+	message2 = Message(owner_id=2, recipient_id=1, sent_at=datetime(2016, 11, 11, 0, 15, 0, 59559), message_body="hell yes")
+
+	connection1 = Pair(user_1_id=1, user_2_id=2)
+	connection2 = Pair(user_1_id=3, user_2_id=1)
+	connection3 = Pair(user_1_id=4, user_2_id=1)
+	connection4 = Pair(user_1_id=2, user_2_id=3)
 
 	db.session.add_all([user1, user2, user3, user4, update1, update2, update3,
-		comment1, comment2, comment3])
+		comment1, comment2, comment3, message1, message2, connection1, connection2,
+		connection3, connection4])
 	db.session.commit()
 
 

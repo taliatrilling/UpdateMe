@@ -100,7 +100,6 @@ def check_inbox(user_id):
 	users_in_conversations_with = []
 
 	messages = Message.query.filter((Message.owner_id == user_id) | (Message.recipient_id == user_id)).all()
-	# received_messages = Message.query.filter(Message.recipient_id == user_id).all()
 
 	for message in messages:
 		if message.owner_id not in users_in_conversations_with and message.recipient_id not in users_in_conversations_with:
