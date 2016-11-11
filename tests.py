@@ -3,7 +3,7 @@ import server as s
 from model import User, Update, Comment, Pair, Message, Request, connect_to_db, db, fake_test_data
 import unittest
 from flask_sqlalchemy import SQLAlchemy 
-# from flask import (Flask, render_template, redirect, request, session, flash, jsonify)
+from flask import (Flask, render_template, redirect, request, session, flash, jsonify)
 
 
 class LogicTestCases(unittest.TestCase):
@@ -105,16 +105,28 @@ class LogicTestCases(unittest.TestCase):
 	def test_get_connection_requests_when_none(self):
 		self.assertEqual(s.get_connection_requests(1), [])
 
+	def test_usernames_behind_connection_requests(self):
+		requests = Request.query.filter(Request.requestee_id == 2).all()
+		self.assertEqual(s.usernames_behind_connection_requests(requests), ["liara"])
+
 	def tearDown(self):
 		db.session.close()
 		db.drop_all()
 
 
 class RouteTestCases(unittest.TestCase):
-	pass
-	# 	#to set up Flask route testing:
-	# self.client = server.app.test_client()
-	# server.app.config['TESTING'] = True
+	"""Tests flask route functions in server"""
+
+	def setUp(self):
+		connect_to_db(app, "postgresql:///twitterclonetest")
+		db.create_all()
+		fake_test_data()
+		self.client = server.app.test_client()
+		server.app.config['TESTING'] = True
+
+	def tearDown(self):
+		db.session.close()
+		db.drop_all()
 
 if __name__ == '__main__':
 	unittest.main()
