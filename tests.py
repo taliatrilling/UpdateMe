@@ -79,15 +79,36 @@ class LogicTestCases(unittest.TestCase):
 		self.assertEqual(s.show_feed_all(0), all_updates)
 
 	def test_all_connections_for_current_user(self):
-		
+		self.assertEqual(s.all_connections_for_current_user(1), [2,3,4])
 
+	def test_show_feed_connections(self):
+		all_updates = [[u"garrus", u"just in the middle of some calibrations", "0:02 UTC on November 11, 2016", 2, 1],
+		[u"liara", u"please stop calling me the shadow broker, I'm totally not her--I mean, them...", "0:02 UTC on November 11, 2016", 4, 3]]
+		self.assertEqual(s.show_feed_connections(0, 1), all_updates)
+
+	def test_all_updates_for_specific_user(self):
+		updates = Update.query.filter(Update.user_id == 1).all()
+		self.assertEqual(s.all_updates_for_specific_user(1), updates)
+
+	def test_add_connection_request(self):
+		self.assertEqual(s.add_connection_request(3, 4), 2)
+		self.assertIsNotNone(Request.query.filter(Request.request_id == 2).first())
+
+	def test_add_pair_to_db(self):
+		self.assertEqual(s.add_pair_to_db(3, 4), 5)
+		self.assertIsNotNone(Pair.query.filter(Pair.pair_id == 5).first())
+
+	def test_get_connection_requests(self):
+		requests = Request.query.filter(Request.requestee_id == 2).all()
+		self.assertEqual(s.get_connection_requests(2), requests)
+
+	def test_get_connection_requests_when_none(self):
+		self.assertEqual(s.get_connection_requests(1), [])
 
 	def tearDown(self):
 		db.session.close()
 		db.drop_all()
 
-#[u"liara", u"please stop calling me the shadow broker, I'm totally not her--I mean, them...", "0:02 UTC on November 11, 2016", 4, 3]
-#[u"garrus", u"just in the middle of some calibrations", "0:02 UTC on November 11, 2016", 2, 1]
 
 class RouteTestCases(unittest.TestCase):
 	pass

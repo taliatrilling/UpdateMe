@@ -174,9 +174,11 @@ def fake_test_data():
 	connection3 = Pair(user_1_id=4, user_2_id=1)
 	connection4 = Pair(user_1_id=2, user_2_id=3)
 
+	request1 = Request(requester_id=4, requestee_id=2)
+
 	db.session.add_all([user1, user2, user3, user4, update1, update2, update3,
 		comment1, comment2, comment3, message1, message2, connection1, connection2,
-		connection3, connection4])
+		connection3, connection4, request1])
 	db.session.commit()
 
 
