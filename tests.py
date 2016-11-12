@@ -61,8 +61,7 @@ class LogicTestCases(unittest.TestCase):
 		self.assertEqual(s.get_message_history(1), messages)
 
 	def test_which_pair_by_active_user(self):
-		pass #code needs to be refactored because refers to session
-		# self.assertEqual(s.which_pair_by_active_user(1), 
+		self.assertEqual(s.which_pair_by_active_user(1, 1), 2) 
 
 	def test_submit_message_to_db(self):
 		self.assertEqual(s.submit_message_to_db(3, 1, "Shepard."), 3)
@@ -114,15 +113,57 @@ class LogicTestCases(unittest.TestCase):
 		db.drop_all()
 
 
-class RouteTestCases(unittest.TestCase):
-	"""Tests flask route functions in server"""
+class RouteTestCasesSession(unittest.TestCase):
+	"""Tests flask route functions in server that use session keys/rely on session keys to know to redirect"""
 
 	def setUp(self):
 		connect_to_db(app, "postgresql:///twitterclonetest")
 		db.create_all()
 		fake_test_data()
-		self.client = server.app.test_client()
-		server.app.config['TESTING'] = True
+		self.client = s.app.test_client()
+		s.app.config['TESTING'] = True
+		s.app.config["SECRET_KEY"] = "masseffectrulez"
+		with self.client as c:
+			with c.session_transaction() as sess:
+				sess["user_id"] = 1
+				sess["username"] = "shepard"
+
+	def test_register_route_already_signed_in(self):
+		result = self.client.get("/register")
+		self.assertIn("Redirecting..", result.data)
+
+	def tearDown(self):
+		db.session.close()
+		db.drop_all()
+
+class RouteTestCasesNoSession(unittest.TestCase):
+	"""Tests flask route functions in server that don't use a session key or in fact require there to not be a session key"""
+
+	def setUp(self):
+		connect_to_db(app, "postgresql:///twitterclonetest")
+		db.create_all()
+		fake_test_data()
+		self.client = s.app.test_client()
+		s.app.config['TESTING'] = True
+
+	def test_index_route(self):
+		result = self.client.get("/")
+		self.assertIn("<h1>My Feed</h1>", result.data)
+		self.assertIn("Updates from All Users", result.data)
+		self.assertIn("Updates from Your Connections", result.data)
+
+	def test_register_route(self):
+		result = self.client.get("/register")
+		self.assertIn("Please enter a username (must be between 4 and 20 characters, \n\t\tonly contain valid characters without spaces, and be unique from \n\t\texisting users):", result.data)
+
+	def test_register_success_route(self):
+		result = self.client.post("/register-success", data={"username":"mordin", "password":"sciencelvr", "is_public":"1"})
+		self.assertIsNotNone(User.query.filter(User.username == "mordin").first())
+
+	def test_login_route(self):
+		result = self.client.get("/login")
+		self.assertIn("<h1>Log In</h1>", result.data)
+
 
 	def tearDown(self):
 		db.session.close()

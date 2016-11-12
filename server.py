@@ -148,20 +148,18 @@ def get_message_history(pair_id):
 
 	return message_history
 
-def which_pair_by_active_user(pair_id):
+def which_pair_by_active_user(user_id, pair_id):
 	"""When logged in as a user, for pairs that the user is in, when given a 
 	certain pair_id, returns the user_id of the other user in the pair"""
 
 	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
 	
-	if "user_id" not in session:
+	if user_id != pair.user_1_id and user_id != pair.user_2_id:
 		return False
-	if session["user_id"] != pair.user_1_id and session["user_id"] != pair.user_2_id:
-		return False
-	if session["user_id"] == pair.user_1_id:
+	if user_id == pair.user_1_id:
 		other_user = User.query.get(pair.user_2_id)
 		return other_user.user_id
-	if session["user_id"] == pair.user_2_id:
+	if user_id == pair.user_2_id:
 		other_user = User.query.get(pair.user_1_id)
 		return other_user.user_id
 
@@ -277,8 +275,12 @@ def index():
 @app.route("/register")
 def register():
 	"""Displays registration form"""
-	
-	return render_template("register.html")
+
+	if "user_id" in session:
+		flash("You are already logged into an account, please log out if you would like to register another account.")
+		return redirect("/")
+	else:
+		return render_template("register.html")
 
 
 @app.route("/register-success", methods=["POST"])
@@ -309,7 +311,11 @@ def register_success():
 def login():
 	"""Displays the login form for an existing user"""
 
-	return render_template("login.html")
+	if "user_id" in session:
+		flash("You are already logged in.")
+		return redirect("/")
+	else:
+		return render_template("login.html")
 
 
 @app.route("/login-success", methods=["POST"])
@@ -443,10 +449,10 @@ def show_message(pair_id):
 	"""For a pair, displays the messages between the two users (if any)"""
 	
 	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
-	other_user_id = which_pair_by_active_user(pair_id)
-	other_user = (User.query.get(other_user_id)).username
 	if "user_id" in session:
 		user_id = session["user_id"]
+		other_user_id = which_pair_by_active_user(user_id, pair_id)
+		other_user = (User.query.get(other_user_id)).username
 		if user_id == pair.user_1_id or user_id == pair.user_2_id:
 			message_history = get_message_history(pair_id)
 			return render_template("specific_message.html", message_history=message_history,
