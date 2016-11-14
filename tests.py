@@ -132,6 +132,17 @@ class RouteTestCasesSession(unittest.TestCase):
 		result = self.client.get("/register")
 		self.assertIn("Redirecting..", result.data)
 
+	def test_login_already_signed_in(self):
+		result = self.client.get("/login")
+		self.assertIn("Redirecting..", result.data)
+
+	def test_logout(self):
+		# not sure how to test this either, since it primarily just deletes session key
+		pass
+
+	def test_compose_update_logged_in(self):
+		pass
+
 	def tearDown(self):
 		db.session.close()
 		db.drop_all()
@@ -145,6 +156,7 @@ class RouteTestCasesNoSession(unittest.TestCase):
 		fake_test_data()
 		self.client = s.app.test_client()
 		s.app.config['TESTING'] = True
+		s.app.config["SECRET_KEY"] = "masseffectrulez"
 
 	def test_index_route(self):
 		result = self.client.get("/")
@@ -164,6 +176,12 @@ class RouteTestCasesNoSession(unittest.TestCase):
 		result = self.client.get("/login")
 		self.assertIn("<h1>Log In</h1>", result.data)
 
+	def test_login_success(self):
+		result = self.client.post("/login-success", data={"username":"shepard", "password":"password123"})
+		#find way to test? NEED TO ADDRESS
+
+	def test_compose_update_not_logged_in(self):
+		pass
 
 	def tearDown(self):
 		db.session.close()

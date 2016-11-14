@@ -30,9 +30,11 @@ app.jinja_env.auto_reload = True
 def add_user(username, password, is_public):
 	"""Adds new user to database, allowing them to use the website"""
 	if is_public == 1:
+		username = username.lower()
 		user = User(username=username, password=password, 
 					joined_at=datetime.now(), is_public=True)
 	if is_public == 2:
+		username = username.lower()
 		user = User(username=username, password=password, 
 					joined_at=datetime.now(), is_public=False)
 
@@ -328,13 +330,13 @@ def login_success():
 	password = request.form.get("password")	
 
 	user_id = check_user_credentials(username, password)
-	session["user_id"] = user_id
-	session["username"] = username
 
-	if success:
+	if user_id:
+		session["user_id"] = user_id
+		session["username"] = username
 		flash("You were successfully signed in, %s" % username)
 		return redirect("/")
-	if not success:
+	if not user_id:
 		flash("Your username or password was invalid, please try again.")
 		return redirect("/login")
 
@@ -521,7 +523,9 @@ def submit_reply_message():
 def check_username():
 	"""Route for username validation--checks if a given username is already in the system"""
 	username = request.args.get("username")
-	if User.query.filter(User.username == username).first():
+	if User.query.filter(User.username == username.lower()).first():
+		return "exists"
+	elif User.query.filter(User.username == username).first():
 		return "exists"
 	else:
 		return "available"
