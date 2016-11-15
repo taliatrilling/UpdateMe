@@ -18,5 +18,14 @@
 
 {% endif %}
 
+<h2>Would you like to change your password? For safety purposes, you will need to re-enter your current password</h2>
+<form action="/preferences/change-password-success" method="POST">
+	<label>Current password:</label>
+	<input type="password" name="current_password"></br>
+	<label>New password:</label>
+	<input type="password" name="new_password"></br>
+	<input type="submit">
+</form>
+
 {% endblock %}
 

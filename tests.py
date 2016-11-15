@@ -108,6 +108,12 @@ class LogicTestCases(unittest.TestCase):
 		requests = Request.query.filter(Request.requestee_id == 2).all()
 		self.assertEqual(s.usernames_behind_connection_requests(requests), ["liara"])
 
+	def test_change_password(self):
+		pass
+
+	def test_change_public_or_private(self):
+		pass
+
 	def tearDown(self):
 		db.session.close()
 		db.drop_all()

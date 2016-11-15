@@ -10,9 +10,9 @@ from model import User, Update, Comment, Pair, Message, Request, connect_to_db, 
 
 from datetime import datetime
 
-import os
+from passlib.hash import bcrypt
 
-from itsdangerous import URLSafeSerializer
+import os
 
 app = Flask(__name__)
 
@@ -20,7 +20,6 @@ app = Flask(__name__)
 
 #reminder: need to input "source secret.sh" in shell to use
 app.secret_key = os.environ["SECRET_KEY"]
-# serializer = URLSafeSerializer(os.enviorn["URL_SECRET_KEY"])
 
 #so that error raised if jinja tries to reference an undefined variable
 app.jinja_env.undefined = StrictUndefined
@@ -267,6 +266,19 @@ def usernames_behind_connection_requests(current_requests):
 
 	return usernames
 
+def change_password(current_user_id, new_password):
+	"""Changes the password of the current user"""
+	
+	User.query.filter(User.user_id == current_user_id).update({"password": bcrypt.encrypt(new_password)})
+	db.session.commit()
+	if User.query.filter(User.user_id == current_user_id, User.password == bcrypt.encrypt(new_password)).first():
+		return True
+	else:
+		return False
+	
+
+def change_public_or_private():
+	pass
 
 #routes
 
@@ -636,11 +648,31 @@ def approve_request(request_id):
 	return redirect("/review-connection-requests")
 
 
-##to do: add way to comment directly from main feed? add links from profile pages to specific update pages?
+@app.route("/preferences/change-password-success", methods=["POST"])
+def change_password_success():
+	"""Calls function to change user password if correctly validated, redirects to profile and displays success message"""
+	
+	user_id = session["user_id"]
+	username = session["username"]
+	current_password = request.form.get("current_password")
+	new_password = request.form.get("new_password")
+	print current_password, new_password
+	validation_success = check_user_credentials(username, current_password)
+
+	if validation_success:
+		print "I got here"
+		change_password(user_id, new_password)
+		print "I got here1"
+		flash("Your password has been successfully changed.")
+		return redirect("/profile/" + str(user_id))
+	else:
+		flash("Your current password was entered incorrectly, please try again.")
+		return redirect("/profile/" + str(user_id))
+
 
 
 if __name__ == '__main__':
-	app.debug = False
+	app.debug = True
 	connect_to_db(app)
 	DebugToolbarExtension(app)
 	app.run(host="0.0.0.0", port=5000)
