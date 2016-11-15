@@ -16,6 +16,19 @@
 	<input type="submit">
 </form>
 
+{% if updates|length > 0 %}
+
+	<h3>Updates posted by {{ user_of_interest.username }}:</h3>
+
+{% for update in updates %}
+
+	<a href ="/update/{{ update.update_id }}">{{ update.update_body }}</a><br>
+	Posted at {{ update.posted_at }}<br><br>
+
+{% endfor %}
+
+{% endif %}
+
 <script
   src="https://code.jquery.com/jquery-3.1.1.min.js"
   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="

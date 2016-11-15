@@ -21,7 +21,7 @@ their content is public, you may still see their updates, but you may not messag
 
 {% for update in updates %}
 
-	{{ update.update_body }}<br>
+	<a href ="/update/{{ update.update_id }}">{{ update.update_body }}</a><br>
 	Posted at {{ update.posted_at }}<br><br>
 
 {% endfor %}

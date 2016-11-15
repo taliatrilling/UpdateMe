@@ -12,12 +12,15 @@ from datetime import datetime
 
 import os
 
+from itsdangerous import URLSafeSerializer
+
 app = Flask(__name__)
 
 #add change password functionality!
 
 #reminder: need to input "source secret.sh" in shell to use
 app.secret_key = os.environ["SECRET_KEY"]
+# serializer = URLSafeSerializer(os.enviorn["URL_SECRET_KEY"])
 
 #so that error raised if jinja tries to reference an undefined variable
 app.jinja_env.undefined = StrictUndefined
@@ -576,8 +579,8 @@ def show_profile(user_id):
 				return render_template("public_profile.html", user_of_interest=user_of_interest, updates=updates)
 		else:
 			if pair_lookup(user_of_interest.user_id, current_user_id):
-				#display full profile
-				return render_template("shared_private_profile.html", user_of_interest=user_of_interest)
+				updates = all_updates_for_specific_user(user_of_interest.user_id)
+				return render_template("shared_private_profile.html", user_of_interest=user_of_interest, updates=updates)
 			else:
 				return render_template("profile_private.html", user_of_interest=user_of_interest)
 	else:
