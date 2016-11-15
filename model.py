@@ -157,10 +157,12 @@ def fake_test_data():
 	user2 = User(username="garrus", password="pass123", joined_at=datetime(2016, 11, 11, 0, 0, 31, 645845), is_public=False)
 	user3 = User(username="wrex", password="pword", joined_at=datetime(2016, 11, 11, 0, 0, 31, 645845), is_public=True)
 	user4 = User(username="liara", password="passpass", joined_at=datetime(2016, 11, 11, 0, 0, 31, 645845), is_public=False)
+	user5 = User(username="saren", password="evildude", joined_at=datetime(2016, 11, 11, 0, 0, 31, 645845), is_public=False)
 
 	update1 = Update(user_id=2, update_body="just in the middle of some calibrations", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
 	update2 = Update(user_id=1, update_body="anyone want to open this bottle of serrice ice I got for Chakwas with me?", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
 	update3= Update(user_id=4, update_body="please stop calling me the shadow broker, I'm totally not her--I mean, them...", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
+	update4= Update(user_id=5, update_body="I'm so going to betray Nihlus ;)", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
 
 	comment1 = Comment(update_id=2, user_id=3, comment_body="Shepard.", posted_at=datetime(2016, 11, 11, 0, 2, 45, 185511))
 	comment2 = Comment(update_id=2, user_id=1, comment_body="Wrex.", posted_at=datetime(2016, 11, 11, 0, 2, 45, 185511))
@@ -176,7 +178,7 @@ def fake_test_data():
 
 	request1 = Request(requester_id=4, requestee_id=2)
 
-	db.session.add_all([user1, user2, user3, user4, update1, update2, update3,
+	db.session.add_all([user1, user2, user3, user4, user5, update1, update2, update3, update4,
 		comment1, comment2, comment3, message1, message2, connection1, connection2,
 		connection3, connection4, request1])
 	db.session.commit()

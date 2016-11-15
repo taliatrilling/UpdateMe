@@ -150,11 +150,50 @@ class RouteTestCasesSession(unittest.TestCase):
 		pass
 
 	def test_compose_update_logged_in(self):
-		pass
+		result = self.client.get("/compose-update")
+		self.assertIn("<h1>What's on your mind?</h1>", result.data)
+
+	def test_update_posted_logged_in(self):
+		result = self.client.post("/update-posted", data={"textbody": "Cmdr Shepard here!"})
+		self.assertIsNotNone(Update.query.filter(Update.update_body == "Cmdr Shepard here!").first())
+
+	def test_show_specific_update_owner_private_not_connected(self):
+		result = self.client.get("/update/4")
+		self.assertIn("Redirecting..", result.data)
+		self.assertNotIn("I'm so going to betray Nihlus ;)", result.data)
+
+	def test_show_specific_update_owner_private_connected(self):
+		result = self.client.get("/update/1")
+		self.assertIn("just in the middle of some calibrations", result.data)
+
+	def test_add_comment_logged_in(self):
+		result = self.client.post("/add-comment/1", data={"comment": "do you ever do anything else??"})
+		self.assertIsNotNone(Comment.query.filter(Comment.comment_id == 4, Comment.update_id == 1).first())
+
+	def test_show_inbox_logged_in(self):
+		result = self.client.get("/inbox")
+		self.assertIn("Conversation with garrus", result.data)
+
+	def test_show_message_logged_in_in_pair(self):
+		result = self.client.get("/message/1")
+		self.assertIn("up for another contest on the citadel later?", result.data)
+		self.assertIn("hell yes", result.data)
+
+	def test_show_message_logged_in_not_in_pair(self):
+		result = self.client.get("/message/4")
+		self.assertIn("Redirecting..", result.data)
+		self.assertNotIn("Would you like to start a conversation?", result.data)
+
+	def test_compose_message_logged_in(self):
+		result = self.client.get("/compose-message")
+		self.assertIn("Message recipient:", result.data)
 
 	def tearDown(self):
 		db.session.close()
 		db.drop_all()
+
+#add test cast/different session for user logged in with no current messages, composing a message when not connected to anyone,
+#
 
 class RouteTestCasesNoSession(unittest.TestCase):
 	"""Tests flask route functions in server that don't use a session key or in fact require there to not be a session key"""
@@ -190,7 +229,34 @@ class RouteTestCasesNoSession(unittest.TestCase):
 		#find way to test? NEED TO ADDRESS
 
 	def test_compose_update_not_logged_in(self):
-		pass
+		result = self.client.get("/compose-update")
+		self.assertIn("Redirecting..", result.data)
+
+	def test_show_specific_update_owner_public(self):
+		result = self.client.get("/update/2")
+		self.assertIn("anyone want to open this bottle of serrice ice I got for Chakwas with me?", result.data)
+
+	def test_show_specific_update_owner_private_not_logged_in(self):
+		result = self.client.get("/update/4")
+		self.assertIn("Redirecting..", result.data)
+		self.assertNotIn("I'm so going to betray Nihlus ;)", result.data)
+
+	def test_add_comment_not_logged_in(self):
+		result = self.client.post("/add-comment/1")
+		self.assertIn("Redirecting..", result.data)
+
+	def test_show_inbox_not_logged_in(self):
+		result = self.client.get("/inbox")
+		self.assertIn("Redirecting..", result.data)
+
+	def test_show_message_not_logged_in(self):
+		result = self.client.get("/message/1")
+		self.assertIn("Redirecting..", result.data)
+		self.assertNotIn("up for another contest on the citadel later?", result.data)
+
+	def test_compose_message_not_logged_in(self):
+		result = self.client.get("/compose-message")
+		self.assertIn("Redirecting..", result.data)
 
 	def tearDown(self):
 		db.session.close()

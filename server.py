@@ -415,6 +415,10 @@ def show_specific_update(update_id):
 				flash("You do not have access to this user's updates.")
 				return redirect("/")
 	else:
+		update = Update.query.get(update_id)
+		text = update.update_body
+		user_id = update.user_id
+		user = User.query.get(user_id)
 		if user.is_public:
 			username = user.username
 			time_date = datetime.strftime(update.posted_at, "%-H:%M UTC on %B %-d, %Y")
@@ -422,6 +426,9 @@ def show_specific_update(update_id):
 
 			return render_template("specific_update.html", username=username, text=text, 
 				time_date=time_date, update_id=update_id, user_comments=user_comments, user_id=user_id)
+		else:
+			flash("You do not have access to this user's updates.")
+			return redirect("/")
 
 @app.route("/add-comment/<int:update_id>", methods=["POST"])
 def add_comment(update_id):
@@ -464,12 +471,16 @@ def show_message(pair_id):
 	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
 	if "user_id" in session:
 		user_id = session["user_id"]
-		other_user_id = which_pair_by_active_user(user_id, pair_id)
-		other_user = (User.query.get(other_user_id)).username
-		if user_id == pair.user_1_id or user_id == pair.user_2_id:
-			message_history = get_message_history(pair_id)
-			return render_template("specific_message.html", message_history=message_history,
-				other_user=other_user, other_user_id=other_user_id)
+		if which_pair_by_active_user(user_id, pair_id):
+			other_user_id = which_pair_by_active_user(user_id, pair_id)
+			other_user = (User.query.get(other_user_id)).username
+			if user_id == pair.user_1_id or user_id == pair.user_2_id:
+				message_history = get_message_history(pair_id)
+				return render_template("specific_message.html", message_history=message_history,
+					other_user=other_user, other_user_id=other_user_id)
+			else:
+				flash("You do not have access to this page.")
+				return redirect("/")
 		else:
 			flash("You do not have access to this page.")
 			return redirect("/")
