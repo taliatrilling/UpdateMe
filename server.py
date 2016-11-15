@@ -268,19 +268,15 @@ def usernames_behind_connection_requests(current_requests):
 
 def change_password(current_user_id, new_password):
 	"""Changes the password of the current user"""
-	
-	User.query.filter(User.user_id == current_user_id).update({"password": bcrypt.encrypt(new_password)})
+
+	user = User.query.get(current_user_id)
+	user.password = bcrypt.encrypt(new_password)
 	db.session.commit()
-	if User.query.filter(User.user_id == current_user_id, User.password == bcrypt.encrypt(new_password)).first():
+
+	if bcrypt.verify(new_password, user.password):
 		return True
 	else:
 		return False
-	
-
-def change_public_or_private():
-	pass
-
-#routes
 
 @app.route("/")
 def index():
@@ -656,13 +652,10 @@ def change_password_success():
 	username = session["username"]
 	current_password = request.form.get("current_password")
 	new_password = request.form.get("new_password")
-	print current_password, new_password
 	validation_success = check_user_credentials(username, current_password)
 
 	if validation_success:
-		print "I got here"
 		change_password(user_id, new_password)
-		print "I got here1"
 		flash("Your password has been successfully changed.")
 		return redirect("/profile/" + str(user_id))
 	else:

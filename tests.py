@@ -4,6 +4,7 @@ from model import User, Update, Comment, Pair, Message, Request, connect_to_db, 
 import unittest
 from flask_sqlalchemy import SQLAlchemy 
 from flask import (Flask, render_template, redirect, request, session, flash, jsonify)
+from passlib.hash import bcrypt
 
 
 class LogicTestCases(unittest.TestCase):
@@ -109,10 +110,12 @@ class LogicTestCases(unittest.TestCase):
 		self.assertEqual(s.usernames_behind_connection_requests(requests), ["liara"])
 
 	def test_change_password(self):
-		pass
-
-	def test_change_public_or_private(self):
-		pass
+		new_pass = "n7lady"
+		user_id = 1
+		s.change_password(user_id, new_pass)
+		password_in_db = User.query.get(user_id).password
+		verified = bcrypt.verify(new_pass, password_in_db)
+		self.assertTrue(verified)
 
 	def tearDown(self):
 		db.session.close()
