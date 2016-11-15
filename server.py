@@ -637,7 +637,7 @@ def approve_request(request_id):
 
 
 if __name__ == '__main__':
-	app.debug = True
+	app.debug = False
 	connect_to_db(app)
 	DebugToolbarExtension(app)
 	app.run(host="0.0.0.0", port=5000)
