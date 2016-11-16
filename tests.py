@@ -91,8 +91,8 @@ class LogicTestCases(unittest.TestCase):
 		self.assertEqual(s.all_updates_for_specific_user(1), updates)
 
 	def test_add_connection_request(self):
-		self.assertEqual(s.add_connection_request(3, 4), 2)
-		self.assertIsNotNone(Request.query.filter(Request.request_id == 2).first())
+		self.assertEqual(s.add_connection_request(3, 4), 3)
+		self.assertIsNotNone(Request.query.filter(Request.request_id == 3).first())
 
 	def test_add_pair_to_db(self):
 		self.assertEqual(s.add_pair_to_db(3, 4), 5)
@@ -103,7 +103,7 @@ class LogicTestCases(unittest.TestCase):
 		self.assertEqual(s.get_connection_requests(2), requests)
 
 	def test_get_connection_requests_when_none(self):
-		self.assertEqual(s.get_connection_requests(1), [])
+		self.assertEqual(s.get_connection_requests(5), [])
 
 	def test_usernames_behind_connection_requests(self):
 		requests = Request.query.filter(Request.requestee_id == 2).all()
@@ -196,12 +196,69 @@ class RouteTestCasesSession(unittest.TestCase):
 		result = self.client.post("/submit-reply-message", data={"message": "see you there tomorrow?", "recipient": 2})
 		self.assertIsNotNone(Message.query.filter(Message.msg_id == 3).first())
 
+	def test_view_own_profile(self):
+		result = self.client.get("/profile/1")
+		self.assertIn("Your Profile", result.data)
+
+	def test_view_public_profile_connected(self):
+		result = self.client.get("/profile/3")
+		self.assertIn("You are currently connected with", result.data)
+
+	def test_view_public_profile_not_connected(self):
+		result = self.client.get("/profile/6")
+		self.assertIn("you may still see their updates, but you may not message them", result.data)
+
+	def test_view_private_profile_connected(self):
+		result = self.client.get("/profile/2")
+		self.assertIn("You are currently connected with", result.data)
+
+	def test_view_private_profile_not_connected(self):
+		result = self.client.get("/profile/5")
+		self.assertNotIn("You are currently connected with", result.data)
+		self.assertIn("you may request access below:", result.data)
+
+	def test_feed_connects_json_route(self):
+		pass
+		#again, need guidance on ajax tests
+
+	def test_request_connection_new(self):
+		result = self.client.post("/request-connection/5")
+		self.assertIsNotNone(Request.query.filter(Request.request_id == 3).first())
+		self.assertIn("Redirecting..", result.data)
+
+	def test_review_connection_requests_when_exist(self):
+		result = self.client.get("/review-connection-requests")
+		self.assertIn("has requested to connect", result.data)
+
+	def test_approve_connection(self):
+		result = self.client.get("/approve-connection/2")
+		self.assertIsNotNone(Pair.query.filter(Pair.pair_id == 5).first())
+
+	def test_change_password_success(self):
+		result = self.client.post("/preferences/change-password-success", data={"current_password":"password123", "new_password":"n7lady"})
+		password_in_db = User.query.get(1).password
+		verified = bcrypt.verify("n7lady", password_in_db)
+		self.assertTrue(verified)
+
 	def tearDown(self):
 		db.session.close()
 		db.drop_all()
 
-#add test cast/different session for user logged in with no current messages, composing a message when not connected to anyone,
-#
+class RouteTestCasesSessionVersion2(unittest.TestCase):
+	"""Tests flask route functions in server that rely on session keys but needed the user to have different user attributes
+	than the previous set of test cases """
+	
+	#add test cast/different session for user logged in with no current messages, composing a message when not connected to anyone,
+	#reviewing requests when none exist
+
+	def test_show_inbox_logged_in_no_messages(self):
+		pass
+
+	def test_compose_message_logged_in_no_connections(self):
+		pass
+
+	def test_review_requests_none_exist(self):
+		pass
 
 class RouteTestCasesNoSession(unittest.TestCase):
 	"""Tests flask route functions in server that don't use a session key or in fact require there to not be a session key"""
@@ -265,6 +322,29 @@ class RouteTestCasesNoSession(unittest.TestCase):
 	def test_compose_message_not_logged_in(self):
 		result = self.client.get("/compose-message")
 		self.assertIn("Redirecting..", result.data)
+
+	# def test_check_username_for_ajax_does_exist(self):
+	# 	result = self.client.get("/check-username", data={"username": "shepard"})
+	# 	#check how to test ajax routes
+
+	# def test_check_username_for_ajax_does_not_exist(self):
+	# 	result = self.client.get("/check-username", data={"username": "shepardthesecond"})
+		#check how to test ajax routes
+
+	def test_feed_all_json(self):
+		result = self.client.get("/feed-all-json")
+		self.assertEqual('{\n  "results": [\n    [\n      "shepard", \n      "anyone want to open this bottle of serrice ice I got for Chakwas with me?", \n      "0:02 UTC on November 11, 2016", \n      1, \n      2\n    ]\n  ]\n}\n', result.data)
+
+	def test_search_results(self):
+		result = self.client.get("/search-results", query_string={"search":"shepard"})
+		self.assertIn("Users with usernames matching your search:", result.data)
+		self.assertIn("shepard", result.data)
+
+	def test_view_profile_not_logged_in(self):
+		result = self.client.get("/profile/1")
+		self.assertIn("Redirecting..", result.data)
+		self.assertNotIn("shepard", result.data)
+
 
 	def tearDown(self):
 		db.session.close()

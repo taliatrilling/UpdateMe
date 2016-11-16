@@ -158,6 +158,7 @@ def fake_test_data():
 	user3 = User(username="wrex", password="pword", joined_at=datetime(2016, 11, 11, 0, 0, 31, 645845), is_public=True)
 	user4 = User(username="liara", password="passpass", joined_at=datetime(2016, 11, 11, 0, 0, 31, 645845), is_public=False)
 	user5 = User(username="saren", password="evildude", joined_at=datetime(2016, 11, 11, 0, 0, 31, 645845), is_public=False)
+	user6 = User(username="jenkins", password="npclyfe", joined_at=datetime(2016, 11, 11, 0, 0, 31, 645845), is_public=True)
 
 	update1 = Update(user_id=2, update_body="just in the middle of some calibrations", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
 	update2 = Update(user_id=1, update_body="anyone want to open this bottle of serrice ice I got for Chakwas with me?", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
@@ -177,10 +178,11 @@ def fake_test_data():
 	connection4 = Pair(user_1_id=2, user_2_id=3)
 
 	request1 = Request(requester_id=4, requestee_id=2)
+	request2 = Request(requester_id=6, requestee_id=1)
 
-	db.session.add_all([user1, user2, user3, user4, user5, update1, update2, update3, update4,
-		comment1, comment2, comment3, message1, message2, connection1, connection2,
-		connection3, connection4, request1])
+	db.session.add_all([user1, user2, user3, user4, user5, user6, update1, update2, 
+		update3, update4, comment1, comment2, comment3, message1, message2, 
+		connection1, connection2, connection3, connection4, request1, request2])
 	db.session.commit()
 
 

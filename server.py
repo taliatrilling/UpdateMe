@@ -651,6 +651,7 @@ def approve_request(request_id):
 	current_user_id = session["user_id"]
 	user_connecting_with_id = (Request.query.filter(Request.request_id == request_id).first()).requester_id
 	add_pair_to_db(current_user_id, user_connecting_with_id)
+	other_user_username = (User.query.get(user_connecting_with_id)).username
 	flash("You have successfully connected with" + other_user_username)
 	return redirect("/review-connection-requests")
 
