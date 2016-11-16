@@ -2,7 +2,7 @@
 {% block title %}Connection Requests{% endblock %}
 
 {% block content %}
-
+<div class="container-fluid">
 {% if current_requests|length == 0 %}
 
 	<h1>You have no current connection requests.</h1>
@@ -18,5 +18,5 @@
 	{% endfor %}
 
 {% endif %}
-
+</div>
 {% endblock %}

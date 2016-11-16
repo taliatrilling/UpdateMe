@@ -117,6 +117,9 @@ class LogicTestCases(unittest.TestCase):
 		verified = bcrypt.verify(new_pass, password_in_db)
 		self.assertTrue(verified)
 
+	def test_get_num_messages_between(self):
+		pass
+
 	def tearDown(self):
 		db.session.close()
 		db.drop_all()
@@ -247,18 +250,34 @@ class RouteTestCasesSession(unittest.TestCase):
 class RouteTestCasesSessionVersion2(unittest.TestCase):
 	"""Tests flask route functions in server that rely on session keys but needed the user to have different user attributes
 	than the previous set of test cases """
-	
-	#add test cast/different session for user logged in with no current messages, composing a message when not connected to anyone,
-	#reviewing requests when none exist
+
+	def setUp(self):
+		connect_to_db(app, "postgresql:///twitterclonetest")
+		db.create_all()
+		fake_test_data()
+		self.client = s.app.test_client()
+		s.app.config['TESTING'] = True
+		s.app.config["SECRET_KEY"] = "masseffectrulez"
+		with self.client as c:
+			with c.session_transaction() as sess:
+				sess["user_id"] = 6
+				sess["username"] = "jenkins"
 
 	def test_show_inbox_logged_in_no_messages(self):
-		pass
+		result = self.client.get("/inbox")
+		self.assertNotIn("Conversation with", result.data)
 
 	def test_compose_message_logged_in_no_connections(self):
-		pass
+		result = self.client.get("/compose-message")
+		self.assertIn("You are not currently connected to any users!", result.data)
 
 	def test_review_requests_none_exist(self):
-		pass
+		result = self.client.get("/review-connection-requests")
+		self.assertIn("You have no current connection requests", result.data)
+
+	def tearDown(self):
+		db.session.close()
+		db.drop_all()
 
 class RouteTestCasesNoSession(unittest.TestCase):
 	"""Tests flask route functions in server that don't use a session key or in fact require there to not be a session key"""

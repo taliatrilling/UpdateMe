@@ -3,6 +3,7 @@
 
 {% block content %}
 
+<div class="container-fluid">
 <h1>{{ user_of_interest.username }}</h1>
 
 <h2>You are not currently connected with {{ user_of_interest.username }}.<br>Because 
@@ -27,6 +28,6 @@ their content is public, you may still see their updates, but you may not messag
 {% endfor %}
 
 {% endif %}
-
+</div>
 
 {% endblock %}

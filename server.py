@@ -12,6 +12,8 @@ from datetime import datetime
 
 from passlib.hash import bcrypt
 
+from sqlalchemy import func
+
 import os
 
 app = Flask(__name__)
@@ -130,14 +132,14 @@ def connections(user_id):
 
 	return connected_to
 
-def get_message_history(pair_id):
-	"""For a given pair, return the 10 most recent messages between the two users"""
+def get_message_history(pair_id, offset_num=0):
+	"""For a given pair, return the 10 most recent messages between the two users, with potential for offset"""
 
 	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
 	messages = Message.query.filter(
 		((Message.recipient_id == pair.user_1_id) | (Message.recipient_id == pair.user_2_id)), 
 		((Message.owner_id == pair.user_1_id) | (Message.owner_id == pair.user_2_id)),
-		Message.deleted == False).order_by(Message.sent_at).limit(10).all()
+		Message.deleted == False).order_by(Message.sent_at).limit(10).offset(offset_num).all()
 
 	message_history = {}
 
@@ -277,6 +279,19 @@ def change_password(current_user_id, new_password):
 		return True
 	else:
 		return False
+
+def get_num_messages_between(pair_id):
+	"""For a given pair, return the number of messages between them in the database (used to calculate need
+	for offset/next button when displaying messages"""
+
+	pair = Pair.query.filter(Pair.pair_id == pair_id).first()
+	message_count = Message.query.filter(
+		((Message.recipient_id == pair.user_1_id) | (Message.recipient_id == pair.user_2_id)), 
+		((Message.owner_id == pair.user_1_id) | (Message.owner_id == pair.user_2_id)),
+		Message.deleted == False).count()
+	return int(message_count)
+
+#routes:
 
 @app.route("/")
 def index():
@@ -475,9 +490,14 @@ def show_message(pair_id):
 			other_user_id = which_pair_by_active_user(user_id, pair_id)
 			other_user = (User.query.get(other_user_id)).username
 			if user_id == pair.user_1_id or user_id == pair.user_2_id:
-				message_history = get_message_history(pair_id)
-				return render_template("specific_message.html", message_history=message_history,
-					other_user=other_user, other_user_id=other_user_id)
+				if get_num_messages_between(pair_id) > 10:
+					message_history = get_message_history(pair_id)
+					return render_template("specific_message_10_plus.html", message_history=message_history,
+						other_user=other_user, other_user_id=other_user_id)
+				else:
+					message_history = get_message_history(pair_id)
+					return render_template("specific_message.html", message_history=message_history,
+						other_user=other_user, other_user_id=other_user_id)
 			else:
 				flash("You do not have access to this page.")
 				return redirect("/")

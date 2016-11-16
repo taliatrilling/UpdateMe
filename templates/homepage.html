@@ -3,11 +3,11 @@
 
 {% block content %}
 
-<h1>My Feed</h1>
 <div class="container-fluid">
+	<h1>My Feed</h1>
 <ul class="nav nav-tabs nav-justified" role="tablist">
-	<button role="presentation" id="all" data-toggle="tab">Updates from All Users</button>
-	<button role="presentation" id="connections" data-toggle="tab">Updates from Your Connections</button>
+	<li><a href="#" role="presentation" id="all" data-toggle="tab">Updates from All Users</a></li>
+	<li><a href="#" role="presentation" id="connections" data-toggle="tab">Updates from Your Connections</a></li>
 	<div id="post"></div>
 	<input type="hidden" id="offset" value="0">
 	<input type="hidden" id="connectionoffset" value="0">

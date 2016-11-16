@@ -2,7 +2,7 @@
 {% block title %}Update{% endblock %}
 
 {% block content %}
-
+<div class="container-fluid">
 <h1>"{{ text }}"</h1>
 <h2>posted by <a href="/profile/{{ user_id }}">{{ username }}</a> at {{ time_date }}</h2>
 
@@ -20,7 +20,7 @@
 		<input type="submit">
 	</form>
 </h3>
-
+</div>
 <script
   src="https://code.jquery.com/jquery-3.1.1.min.js"
   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="

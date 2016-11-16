@@ -3,11 +3,6 @@
 
 {% block content %}
 <div class="container-fluid">
-{% if message_history|length == 0 %}
-
-	<h1>There are currently no messages between you and {{ other_user }}! Would you like to start a conversation?</h1>
-
-{% endif %}
 
 {% for message, content in message_history.items() %}
 
@@ -16,6 +11,11 @@
 	<h4>Sent: {{ content["sent at"] }}</h4>
 
 {% endfor %}
+
+<form action="">
+	<input type="hidden" value="0" name="offset">
+	<input type="submit" value="See More Messages">
+</form>
 
 	<h2>Send a new message to {{ other_user }}:</h2>
 	<form action="/submit-reply-message" method="POST">

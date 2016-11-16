@@ -2,6 +2,7 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
+<div class="container-fluid">
 <h1>{{ user_of_interest.username }}</h1>
 
 <h2>You are currently connected with {{ user_of_interest.username }}</h2>
@@ -28,7 +29,7 @@
 {% endfor %}
 
 {% endif %}
-
+</div>
 <script
   src="https://code.jquery.com/jquery-3.1.1.min.js"
   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="

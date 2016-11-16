@@ -2,6 +2,7 @@
 {% block title %}Inbox{% endblock %}
 
 {% block content %}
+<div class="container-fluid">
 <h1>Inbox</h1>
 
 <h2><a href="/compose-message">Compose new message thread</a>
@@ -11,5 +12,5 @@
 <h2><a href="/message/{{ value }}">Conversation with {{ key }}</a>
 
 {% endfor %}
-
+</div>
 {% endblock %}

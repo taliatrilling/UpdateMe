@@ -2,6 +2,7 @@
 {% block title %}Compose a Message{% endblock %}
 
 {% block content %}
+<div class="container-fluid">
 {% if usernames_connected_with|length == 0 %}
 
 <h1>You are not currently connected to any users! Please connect to a user 
@@ -19,7 +20,7 @@
 	<textarea id="message" rows="3" cols="40" name="message"></textarea><br><div id="messagewarning"></div><br>
 	<input type="submit">
 </form>
-
+</div>
 {% endif %}
 <script
   src="https://code.jquery.com/jquery-3.1.1.min.js"

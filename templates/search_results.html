@@ -2,7 +2,7 @@
 {% block title %}Search Results{% endblock %}
 
 {% block content %}
-
+<div class="container-fluid">
 <h1>Search Results</h1>
 
 {% if matching_users|length == 0 and matching_updates|length == 0 %}
@@ -27,5 +27,5 @@
 {% endfor %}
 
 {% endif %}
-
+</div>
 {% endblock %}
