@@ -188,6 +188,14 @@ class RouteTestCasesSession(unittest.TestCase):
 		result = self.client.get("/compose-message")
 		self.assertIn("Message recipient:", result.data)
 
+	def test_submit_message(self):
+		result = self.client.post("/submit-message", data={"message": "dude your updates just make you look more suspicious", "chosen-recipient": 4})
+		self.assertIsNotNone(Message.query.filter(Message.owner_id == 1, Message.recipient_id == 4).first())
+
+	def test_submit_reply_message(self):
+		result = self.client.post("/submit-reply-message", data={"message": "see you there tomorrow?", "recipient": 2})
+		self.assertIsNotNone(Message.query.filter(Message.msg_id == 3).first())
+
 	def tearDown(self):
 		db.session.close()
 		db.drop_all()

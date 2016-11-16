@@ -533,7 +533,7 @@ def submit_reply_message():
 	message_body = request.form.get("message")
 	other_user_id = request.form.get("recipient")
 
-	submit_message_to_db(other_user_id, message_body)
+	submit_message_to_db(user_id, other_user_id, message_body)
 
 	pair = pair_lookup(user_id, other_user_id)
 
