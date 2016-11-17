@@ -18,8 +18,6 @@ import os
 
 app = Flask(__name__)
 
-#add change password functionality!
-
 #reminder: need to input "source secret.sh" in shell to use
 app.secret_key = os.environ["SECRET_KEY"]
 
@@ -321,7 +319,6 @@ def register_success():
 	password = request.form.get("password")
 	is_public = request.form.get("is_public")
 
-#change to 0 and 1 
 	if is_public == "1":
 		public = 1
 		user_id = add_user(username, password, 1)
@@ -588,10 +585,11 @@ def search_db():
 	"""Takes in the user's input to conduct a search of the entire database,
 	including users and updates (updates only if content is public)"""
 
-	user_input = request.args.get("search")
+	user_input = (request.args.get("search")).lower()
 
-	matching_users = User.query.filter(User.username.like("%"+user_input+"%")).all()
-	matching_updates = Update.query.filter(Update.update_body.like("%"+user_input+"%")).all()
+	matching_users = User.query.filter(func.lower(User.username).like("%"+user_input+"%")).all()
+	public_users = db.session.query(User.user_id).filter(User.is_public == True).all()
+	matching_updates = Update.query.filter(func.lower(Update.update_body).like("%"+user_input+"%"), Update.user_id.in_(public_users)).all()
 
 
 	return render_template("search_results.html", matching_users=matching_users,
@@ -710,7 +708,6 @@ def see_more_messages_in_hist():
 
 if __name__ == '__main__':
 	app.debug = True
-	# app.config["SQLALCHEMY_ECHO"] = True
 	connect_to_db(app)
 	DebugToolbarExtension(app)
 	app.run(host="0.0.0.0", port=5000)
