@@ -12,7 +12,7 @@ from datetime import datetime
 
 from passlib.hash import bcrypt
 
-from sqlalchemy import func
+from sqlalchemy import func, desc
 
 import os
 
@@ -139,9 +139,9 @@ def get_message_history(pair_id, offset_num=0):
 	messages = Message.query.filter(
 		((Message.recipient_id == pair.user_1_id) | (Message.recipient_id == pair.user_2_id)), 
 		((Message.owner_id == pair.user_1_id) | (Message.owner_id == pair.user_2_id)),
-		Message.deleted == False).order_by(Message.sent_at).limit(10).offset(offset_num).all()
+		Message.deleted == False).order_by(desc(Message.sent_at)).limit(5).offset(offset_num).all()
 
-	message_history = {}
+	message_history = []
 
 	for message in messages:
 		owner = User.query.get(message.owner_id)
@@ -149,8 +149,8 @@ def get_message_history(pair_id, offset_num=0):
 		recipient = User.query.get(message.recipient_id)
 		recipient_username = recipient.username
 		time_date = datetime.strftime(message.sent_at, "%-H:%M UTC on %B %-d, %Y")
-		message_history[message.msg_id] = {"to": recipient_username, "from": owner_username,
-		"message": message.message_body, "sent at": time_date, "read": message.read}
+		message_history.append({"to": recipient_username, "from": owner_username,
+		"message": message.message_body, "sent at": time_date, "read": message.read, "msg_id": message.msg_id})
 
 	return message_history
 
@@ -491,9 +491,10 @@ def show_message(pair_id):
 			other_user = (User.query.get(other_user_id)).username
 			if user_id == pair.user_1_id or user_id == pair.user_2_id:
 				if get_num_messages_between(pair_id) > 10:
+					num_messages = get_num_messages_between(pair_id)
 					message_history = get_message_history(pair_id)
 					return render_template("specific_message_10_plus.html", message_history=message_history,
-						other_user=other_user, other_user_id=other_user_id)
+						other_user=other_user, other_user_id=other_user_id, num_messages=num_messages)
 				else:
 					message_history = get_message_history(pair_id)
 					return render_template("specific_message.html", message_history=message_history,
@@ -700,12 +701,15 @@ def see_more_messages_in_hist():
 	"""For ajax uses, grabs offset and other user_id to jsonify the next messages to show"""
 
 	user_id = session["user_id"]
-	other_user_id = request.args.get("other_user_id")
+	other_user_id = request.args.get("other_id")
 	pair_id = pair_lookup(user_id, other_user_id)
+	print other_user_id, pair_id
 	offset = request.args.get("offset")
 	message_json = get_message_history(pair_id, offset)
 	return jsonify({"results": message_json})
 
+
+#CHANGE ORDER BY TO BE DESCENDING
 
 if __name__ == '__main__':
 	app.debug = True
