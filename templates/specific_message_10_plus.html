@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="container-fluid">
-
+<div id="messagecontent">
 {% for message, content in message_history.items() %}
 
 	<h2>To: {{ content["to"] }}<br>From: {{ content["from"] }}</h2>
@@ -11,10 +11,12 @@
 	<h4>Sent: {{ content["sent at"] }}</h4>
 
 {% endfor %}
+</div>
 
 <form action="">
 	<input type="hidden" value="0" name="offset">
-	<input type="submit" value="See More Messages">
+	<input type="hidden" value="{{ other_user_id }}" name="other_user_id">
+	<input type="submit" id="more" value="See More Messages">
 </form>
 
 	<h2>Send a new message to {{ other_user }}:</h2>
@@ -32,6 +34,19 @@
 </script>
 
 <script>
+
+
+$("#more").on("click", function(evt) {
+	var currentOffset = parseInt($("#offset").val());
+	$("#messagecontent").html("");
+	$.get("/older-messages.json", {"offset": currentOffset}, function(results) {
+		for (var i=0; i < results["results"].length; i++) {
+			$("#messagecontent").append("<h1>" + results["results"][i] + "</h1>"
+		}
+	$("#offset").val(currentOffset + 10);
+	} 
+);
+});
 
 $("#message").on("change", function() {
 	var input = $("#message").val();

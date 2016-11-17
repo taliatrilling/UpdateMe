@@ -695,6 +695,17 @@ def change_password_success():
 		return redirect("/profile/" + str(user_id))
 
 
+@app.route("/older-messages.json")
+def see_more_messages_in_hist():
+	"""For ajax uses, grabs offset and other user_id to jsonify the next messages to show"""
+
+	user_id = session["user_id"]
+	other_user_id = request.args.get("other_user_id")
+	pair_id = pair_lookup(user_id, other_user_id)
+	offset = request.args.get("offset")
+	message_json = get_message_history(pair_id, offset)
+	return jsonify({"results": message_json})
+
 
 if __name__ == '__main__':
 	app.debug = True
