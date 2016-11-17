@@ -634,12 +634,9 @@ def see_connections_feed():
 	updates from connections only"""
 
 	user_id = session["user_id"]
-	offset = request.args.get("connectionoffset")
+	offset = request.args.get("offset")
 	feed_json = show_feed_connections(offset, user_id)
-	if feed_json is None:
-		return jsonify({"results": None})
-	else:
-		return jsonify({"results": feed_json})
+	return jsonify({"results": feed_json})
 
 
 @app.route("/request-connection/<int:other_user_id>", methods=["POST"])
@@ -706,7 +703,6 @@ def see_more_messages_in_hist():
 	user_id = session["user_id"]
 	other_user_id = request.args.get("other_id")
 	pair_id = pair_lookup(user_id, other_user_id)
-	print other_user_id, pair_id
 	offset = request.args.get("offset")
 	message_json = get_message_history(pair_id, offset)
 	return jsonify({"results": message_json})
@@ -714,6 +710,7 @@ def see_more_messages_in_hist():
 
 if __name__ == '__main__':
 	app.debug = True
+	# app.config["SQLALCHEMY_ECHO"] = True
 	connect_to_db(app)
 	DebugToolbarExtension(app)
 	app.run(host="0.0.0.0", port=5000)
