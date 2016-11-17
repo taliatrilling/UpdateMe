@@ -636,7 +636,10 @@ def see_connections_feed():
 	user_id = session["user_id"]
 	offset = request.args.get("connectionoffset")
 	feed_json = show_feed_connections(offset, user_id)
-	return jsonify({"results": feed_json})
+	if feed_json is None:
+		return jsonify({"results": None})
+	else:
+		return jsonify({"results": feed_json})
 
 
 @app.route("/request-connection/<int:other_user_id>", methods=["POST"])

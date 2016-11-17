@@ -67,9 +67,9 @@ $("#connections").on("click", function() {
 
 // ($(this)[0].scrollHeight - 20)
 
-$(document).scroll(function() {
+$(window).scroll(function() {
 	var currentOffset = parseInt($("#offset").val());
-	if(($(this).scrollTop() + $(this).innerHeight() >= 10 + 1 * (currentOffset/20)) && (currentOffset > 0)) { 
+	if (window.scrollY + window.innerHeight >= document.body.scrollHeight) { 
 		$.get("/feed-all-json", {"offset": currentOffset}, function(results) {
 			for (var i=0; i < results["results"].length; i++) {
 				$("#post").append("<h1>" + results["results"][i][1] 
@@ -83,21 +83,26 @@ $(document).scroll(function() {
 	)}
 });
 
-$(document).scroll(function() {
+$(window).scroll(function() {
 	var currentOffset = parseInt($("#connectionoffset").val());
-	if(($(this).scrollTop() + $(this).innerHeight() >= 10 + 1 * (currentOffset/20)) && (currentOffset > 0)) { 
+	if (window.scrollY + window.innerHeight >= document.body.scrollHeight) {
 		$.get("/feed-connects-json", {"offset": currentOffset}, function(results) {
-			for (var i=0; i < results["results"].length; i++) {
-				$("#post").append("<h1>" + results["results"][i][1] 
-					+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3,4) +
-					"''>" + results["results"][i][0] + "</a> </h2>" 
-					+ results["results"][i].slice(2,3) + " <a href='/update/" + results["results"][i].slice(4) 
-					+ "'>Link to Update</a>" + "<br>");
+			if (results["results"] === null) {
+				$("#post").append("There are no more updates currently available from your connections")
+			}
+			else {
+				for (var i=0; i < results["results"].length; i++) {
+					$("#post").append("<h1>" + results["results"][i][1] 
+						+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3,4) +
+						"''>" + results["results"][i][0] + "</a> </h2>" 
+						+ results["results"][i].slice(2,3) + " <a href='/update/" + results["results"][i].slice(4) 
+						+ "'>Link to Update</a>" + "<br>");
 			}
 			$("#connectionoffset").val(currentOffset + 20);
-		} 
-	)}
-});
+			}; 
+		});
+	};
+})
 
 
 </script>
