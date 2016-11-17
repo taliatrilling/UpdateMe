@@ -118,7 +118,7 @@ class LogicTestCases(unittest.TestCase):
 		self.assertTrue(verified)
 
 	def test_get_num_messages_between(self):
-		pass
+		self.assertEqual(s.get_num_messages_between(1), 2)
 
 	def tearDown(self):
 		db.session.close()
