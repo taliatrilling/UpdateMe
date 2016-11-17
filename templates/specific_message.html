@@ -9,7 +9,7 @@
 
 {% endif %}
 
-{% for message, content in message_history.items() %}
+{% for content in message_history %}
 
 	<h2>To: {{ content["to"] }}<br>From: {{ content["from"] }}</h2>
 	<h3>{{ content["message"] }}</h3>

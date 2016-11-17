@@ -709,8 +709,6 @@ def see_more_messages_in_hist():
 	return jsonify({"results": message_json})
 
 
-#CHANGE ORDER BY TO BE DESCENDING
-
 if __name__ == '__main__':
 	app.debug = True
 	connect_to_db(app)

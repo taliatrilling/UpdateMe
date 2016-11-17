@@ -55,10 +55,7 @@ class LogicTestCases(unittest.TestCase):
 		self.assertEqual(s.connections(1), [2, 3, 4])
 
 	def test_get_message_history(self):
-		messages = {1: {"to": u"garrus", "from": u"shepard", "message": u"up for another contest on the citadel later?", 
-		"sent at": "0:13 UTC on November 11, 2016", "read": False}, 2: {"to": u"shepard", "from": u"garrus", 
-		"message": u"hell yes", 
-		"sent at": "0:15 UTC on November 11, 2016", "read": False}}
+		messages = [{'from': u'garrus', 'read': False, 'msg_id': 2, 'to': u'shepard', 'sent at': '0:15 UTC on November 11, 2016', 'message': u'hell yes'}, {'from': u'shepard', 'read': False, 'msg_id': 1, 'to': u'garrus', 'sent at': '0:13 UTC on November 11, 2016', 'message': u'up for another contest on the citadel later?'}]
 		self.assertEqual(s.get_message_history(1), messages)
 
 	def test_which_pair_by_active_user(self):
@@ -119,6 +116,9 @@ class LogicTestCases(unittest.TestCase):
 
 	def test_get_num_messages_between(self):
 		self.assertEqual(s.get_num_messages_between(1), 2)
+
+	def test_get_num_messages_when_none(self):
+		self.assertEqual(s.get_num_messages_between(3), 0)
 
 	def tearDown(self):
 		db.session.close()
@@ -220,10 +220,6 @@ class RouteTestCasesSession(unittest.TestCase):
 		self.assertNotIn("You are currently connected with", result.data)
 		self.assertIn("you may request access below:", result.data)
 
-	def test_feed_connects_json_route(self):
-		pass
-		#again, need guidance on ajax tests
-
 	def test_request_connection_new(self):
 		result = self.client.post("/request-connection/5")
 		self.assertIsNotNone(Request.query.filter(Request.request_id == 3).first())
@@ -242,6 +238,7 @@ class RouteTestCasesSession(unittest.TestCase):
 		password_in_db = User.query.get(1).password
 		verified = bcrypt.verify("n7lady", password_in_db)
 		self.assertTrue(verified)
+
 
 	def tearDown(self):
 		db.session.close()
@@ -294,7 +291,7 @@ class RouteTestCasesNoSession(unittest.TestCase):
 		result = self.client.get("/")
 		self.assertIn("<h1>My Feed</h1>", result.data)
 		self.assertIn("Updates from All Users", result.data)
-		self.assertIn("Updates from Your Connections", result.data)
+		self.assertNotIn("Updates from Your Connections", result.data)
 
 	def test_register_route(self):
 		result = self.client.get("/register")
@@ -341,14 +338,6 @@ class RouteTestCasesNoSession(unittest.TestCase):
 	def test_compose_message_not_logged_in(self):
 		result = self.client.get("/compose-message")
 		self.assertIn("Redirecting..", result.data)
-
-	# def test_check_username_for_ajax_does_exist(self):
-	# 	result = self.client.get("/check-username", data={"username": "shepard"})
-	# 	#check how to test ajax routes
-
-	# def test_check_username_for_ajax_does_not_exist(self):
-	# 	result = self.client.get("/check-username", data={"username": "shepardthesecond"})
-		#check how to test ajax routes
 
 	def test_feed_all_json(self):
 		result = self.client.get("/feed-all-json")
