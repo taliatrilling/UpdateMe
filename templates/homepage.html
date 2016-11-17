@@ -5,9 +5,12 @@
 
 <div class="container-fluid">
 	<h1>My Feed</h1>
-<ul class="nav nav-tabs nav-justified" role="tablist">
-	<li><a href="#" role="presentation" id="all" data-toggle="tab">Updates from All Users</a></li>
-	<li><a href="#" role="presentation" id="connections" data-toggle="tab">Updates from Your Connections</a></li>
+<ul class="nav nav-tabs" role="tablist">
+	<li><a href="#" id="all">Updates from All Users</a></li>
+{% if "user_id" in session %}
+	<li><a href="#" id="connections">Updates from Your Connections</a></li>
+{% endif %}
+	<br><br>
 	<div id="post"></div>
 	<input type="hidden" id="offset" value="0">
 	<input type="hidden" id="connectionoffset" value="0">
