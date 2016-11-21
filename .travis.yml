@@ -6,6 +6,10 @@ install:
 - pip install -r requirements.txt
 env:
 - SECRET_KEY="test1234"
+services:
+- postgresql
+before_script:
+- psql -c 'create database twitterclonetest;' -U postgres
 script: 
 - coverage run tests.py
 after_success:
