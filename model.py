@@ -149,6 +149,16 @@ class Request(db.Model):
 		return ("<request_id=%d requester_id=%d requestee_id=%d>"
 				% (self.request_id, self.requester_id, self.requestee_id))
 
+# class Profile(db.Model):
+# 	"""For a given user, holds information relating to their profile in regards to 
+# 	bio, profile picture, etc."""
+
+# 	__tablename__ = "profiles"
+
+# 	profile_id = db.Column(db.Integer, primary_key=True, db.ForeignKey("users.user_id"), nullable=False)
+# 	profile_picture = db.Column(db.LargeBinary)
+# 	profile_bio = db.Column(db.String(500))
+# 	location_desc = db.Column(db.String(140))
 
 def fake_test_data():
 	"""Creates sample data for unittests to use"""

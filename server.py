@@ -2,7 +2,7 @@
 
 from jinja2 import StrictUndefined
 
-from flask import (Flask, render_template, redirect, request, session, flash, jsonify)
+from flask import (Flask, render_template, redirect, request, session, flash, jsonify, url_for)
 
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -14,7 +14,11 @@ from passlib.hash import bcrypt
 
 from sqlalchemy import func, desc
 
+from werkzeug.utils import secure_filename
+
 import os
+
+import os.path
 
 app = Flask(__name__)
 
@@ -25,6 +29,10 @@ app.secret_key = os.environ["SECRET_KEY"]
 app.jinja_env.undefined = StrictUndefined
 #so that app autoreloads in debug mode (specification needed because of above)
 app.jinja_env.auto_reload = True
+
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(APP_ROOT, "static/images")
+ALLOWED_EXTENSIONS = set(["jpg", "jpeg", "png"])
 
 #logic functions here:
 
@@ -288,6 +296,12 @@ def get_num_messages_between(pair_id):
 		((Message.owner_id == pair.user_1_id) | (Message.owner_id == pair.user_2_id)),
 		Message.deleted == False).count()
 	return int(message_count)
+
+def allowed_file(filename):
+	""" """
+
+	#see http://flask.pocoo.org/docs/0.11/patterns/fileuploads/
+	return "." in filename and filename.rsplit(".", 1)[1] in ALLOWED_EXTENSIONS
 
 #routes:
 
@@ -602,25 +616,30 @@ def show_profile(user_id):
 
 	
 	user_of_interest = User.query.filter(User.user_id == user_id).first()
+	file_to_check = "static/images/user" + str(user_of_interest.user_id) + ".png"
 
+	if os.path.isfile(file_to_check):
+		picture_url = file_to_check
+	else:
+		picture_url = "static/images/default.png"
 	if "user_id" in session:
 		current_user_id = session["user_id"]
 		if user_of_interest.user_id == current_user_id:
 			updates = all_updates_for_specific_user(user_id)
-			return render_template("user_profile.html", updates=updates)
+			return render_template("user_profile.html", updates=updates, current_user_id=current_user_id, picture_url=picture_url)
 		elif user_of_interest.is_public: 
 			if pair_lookup(user_of_interest.user_id, current_user_id):
 				updates = all_updates_for_specific_user(user_id)
-				return render_template("public_profile_connected.html", user_of_interest=user_of_interest, updates=updates)
+				return render_template("public_profile_connected.html", user_of_interest=user_of_interest, updates=updates, picture_url=picture_url)
 			else:
 				updates = all_updates_for_specific_user(user_id)
-				return render_template("public_profile.html", user_of_interest=user_of_interest, updates=updates)
+				return render_template("public_profile.html", user_of_interest=user_of_interest, updates=updates, picture_url=picture_url)
 		else:
 			if pair_lookup(user_of_interest.user_id, current_user_id):
 				updates = all_updates_for_specific_user(user_of_interest.user_id)
-				return render_template("shared_private_profile.html", user_of_interest=user_of_interest, updates=updates)
+				return render_template("shared_private_profile.html", user_of_interest=user_of_interest, updates=updates, picture_url=picture_url)
 			else:
-				return render_template("profile_private.html", user_of_interest=user_of_interest)
+				return render_template("profile_private.html", user_of_interest=user_of_interest, picture_url=picture_url)
 	else:
 		flash("Please log in to view a user's profile")
 		return redirect ("/")
@@ -705,9 +724,31 @@ def see_more_messages_in_hist():
 	message_json = get_message_history(pair_id, offset)
 	return jsonify({"results": message_json})
 
+@app.route("/submit-profile-pic/<int:user_id>", methods=['GET', 'POST'])
+def upload_user_pic(user_id):
+	""" """
+
+	user_id = session["user_id"]
+	to_name = "user" + str(user_id) + ".png"
+
+	if request.method == "POST":
+		if "file" not in request.files:
+			flash("No file part")
+			return redirect(request.url)
+		file = request.files["file"]
+		if file.filename == "":
+			flash("No selected file")
+			return redirect(request.url)
+		if file and allowed_file(file.filename):
+			filename = secure_filename(file.filename)
+			file.save(os.path.join(UPLOAD_FOLDER, to_name))
+			return redirect("/profile/" + str(user_id))
+
+
 
 if __name__ == '__main__':
 	app.debug = True
+	app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 	connect_to_db(app)
 	DebugToolbarExtension(app)
 	app.run(host="0.0.0.0", port=5000)

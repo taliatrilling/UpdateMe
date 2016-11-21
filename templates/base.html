@@ -19,6 +19,7 @@
 					<li><a href="/compose-update"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>   Compose an Update</a></li>
 					<li><a href="/compose-message"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>   Compose a Message</a></li>
 					<li><a href="/inbox"><span class="glyphicon glyphicon-inbox" aria-hidden="true"></span>   View your Inbox</a></li>
+					<li><a href="/review-connection-requests"><span class="glyphicon glyphicon-check" aria-hidden="true"></span>   Requests </a></li>
 				{% else %}
 					<li><a href="/login"><span class="glyphicon glyphicon-log-in" aria-hidden="true"></span>   Log In</a></li> 
 					<li><a href="register">Register</a></li>
@@ -44,5 +45,23 @@
 
 
 		{% block content %}BODY CONTENT HERE{% endblock %}
+
+
+		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+		<script src="/static/js/bootstrap-notify.min.js"></script>
+
+		<script src="/static/js/notify.js"></script>
+
+		<script>
+
+		// $.notify({
+		// 	message: "hi"
+		// },{
+		// 	position: "absolute"
+		// });
+
+		// </script>
 	</body>
 </html>
