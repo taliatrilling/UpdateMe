@@ -1,3 +1,5 @@
+# UpdateMe
+
 To run this application on your computer:
 
 1. Make sure you are in the folder you have downloaded the repo to, and in a virtual environment with the packages listed in requirements.txt installed 
