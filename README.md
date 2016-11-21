@@ -1,4 +1,6 @@
-# UpdateMe
+# UpdateMe [![Build Status](https://travis-ci.org/taliatrilling/hb_final_project.svg?branch=master)](https://travis-ci.org/taliatrilling/hb_final_project)
+
+UpdateMe is a Twitter clone primarily written in Python. 
 
 To run this application on your computer:
 
