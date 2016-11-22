@@ -3,8 +3,11 @@
 	<head>
 		<title>{% block title %}TITLE HERE{% endblock %}</title>
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-		<link rel="stylesheet" href="/static/base.css"
-<!-- 		link to stylesheet/bootstrap here -->
+		<link rel="stylesheet" href="/static/base.css">
+		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+		<script type="text/javascript" src="/static/js/noty-2.3.8/js/noty/packaged/jquery.noty.packaged.js"></script>
 	</head>
 	<body>
 		<nav class="navbar navbar-default navbar-fixed-top">
@@ -45,31 +48,38 @@
     {% endwith %}
 
 
-		{% block content %}BODY CONTENT HERE{% endblock %}
+		{% block content %}BODY CONTENT HERE
 
 
-		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-		<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
-		<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
-		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
-		<script type="text/javascript" src="static/js/noty-2.3.8/js/noty/packaged/jquery.noty.packaged.min.js"></script>
+		{% endblock %}
+	</body>
+	{% if "user_id" in session %}
 		<script>
 
+		console.log('running extra js');
+
 		$.get("/get-notifications-json", function(results) {
+			console.log(results);
 			for (var i=0; i < results["results"].length; i++) {
+
+				console.log(results['results'][i]);
+
+
 				if (results["results"][i][1] === "req") {
+					console.log('door #1');
 					var n = $("#notification").noty({type: "information", text: "You have a new connection request to review"});
 				}
 				else if (results["results"][i][1] === "msg") {
+					console.log('door #2');
 					var n = $("#notification").noty({type: "information", text: "You have a new message from a connection"});
 				}
 				else if (results["results"][i][1] === "apr") {
+					console.log('door #3');
 					var n = $("#notification").noty({type: "information", text: "Your requested connection has been approved!"});
 				}
-				// something to change the notification to viewed when clicked!	-- use noty callback functions, but need python side code
-		}})
+				// post request to json route 
+		}});
 	
-
 		</script>
-	</body>
+	{% endif %}
 </html>
