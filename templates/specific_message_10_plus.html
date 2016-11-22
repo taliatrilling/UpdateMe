@@ -3,12 +3,15 @@
 
 {% block content %}
 <div class="container-fluid">
-<div id="messagecontent">
+<div id="messagecontent" class="container">
+
 {% for content in message_history %}
 
+<div class="jumbotron">
 	<h2>To: {{ content["to"] }}<br>From: {{ content["from"] }}</h2>
 	<h3>{{ content["message"] }}</h3>
 	<h4>Sent: {{ content["sent at"] }}</h4>
+</div>
 
 {% endfor %}
 </div>
@@ -43,8 +46,7 @@ $("#more").on("click", function(evt) {
 	$.get("/older-messages.json", {"offset": currentOffset, "other_id": $("#other_id").val()}, function(results) {
 		console.log(results)
 		for (var i=0; i < results["results"].length; i++) {
-			$("#messagecontent").append("<h2> To: " + results["results"][i]["to"] + "<br>From: " + results["results"][i]["from"]
-				+ "</h2> <h3>" + results["results"][i]["message"] + "</h3><h4>Sent: " + results["results"][i]["sent at"] + "</h4>");
+			$("#messagecontent").append("<div class='jumbotron'><h2> To: " + results["results"][i]["to"] + "<br>From: " + results["results"][i]["from"] + "</h2> <h3>" + results["results"][i]["message"] + "</h3><h4>Sent: " + results["results"][i]["sent at"] + "</h4></div>");
 		}
 	$("#offset").val(currentOffset + 5);
 	}) 

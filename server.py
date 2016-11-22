@@ -101,7 +101,7 @@ def display_comments(update_id):
 		time_date = datetime.strftime(comment.posted_at, "%-H:%M UTC on %B %-d, %Y")
 		user_comments[comment.comment_id] = {"comment on": comment.update_id,
 		"posted by": username, "posted at": time_date, 
-		"body": comment.comment_body}
+		"body": comment.comment_body, "user_id": user.user_id}
 
 	return user_comments
 

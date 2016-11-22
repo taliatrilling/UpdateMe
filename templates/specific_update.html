@@ -9,7 +9,7 @@
 
 {% for key, value in user_comments.items() %}
 
-	<h3>Comment:<br>{{ value["body"] }}<br>Posted by: {{ value["posted by"] }} at {{ value["posted at"] }}<br><br></h3>
+	<h3>Comment:<br>{{ value["body"] }}<br>Posted by: <a href="/profile/{{ user_id }}">{{ value["posted by"] }}</a> at {{ value["posted at"] }}<br><br></h3>
 
 {% endfor %}
 

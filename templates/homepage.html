@@ -6,12 +6,12 @@
 <div class="container-fluid">
 	<h1>My Feed</h1>
 <ul class="nav nav-tabs" role="tablist">
-	<li><a href="#" id="all">Updates from All Users</a></li>
+	<li><a href="#" id="all" class="tab">Updates from All Users</a></li>
 {% if "user_id" in session %}
-	<li><a href="#" id="connections">Updates from Your Connections</a></li>
+	<li><a href="#" id="connections" class="tab">Updates from Your Connections</a></li>
 {% endif %}
 	<br><br>
-	<div id="post"></div>
+	<div id="post" class="container"></div>
 	<input type="hidden" id="offset" value="0">
 	<input type="hidden" id="connectionoffset" value="0">
 </ul>
@@ -27,11 +27,11 @@ $("#all").on("click", function(evt) {
 	$("#post").html("");
 	$.get("/feed-all-json", {"offset": 0}, function(results) {
 		for (var i=0; i < results["results"].length; i++) {
-			$("#post").append("<h1>" + results["results"][i][1] 
+			$("#post").append("<div class='jumbotron'><h1>" + results["results"][i][1] 
 				+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3,4) +
 				"''>" + results["results"][i][0] + "</a> </h2>" 
 				+ results["results"][i].slice(2,3) + " <a href='/update/" + results["results"][i].slice(4) 
-				+ "'>Link to Update</a>" + "<br>");
+				+ "'>Link to Update</a>" + "<br></div>");
 		}
 	$("#offset").val(currentOffset + 20);
 	} 
@@ -45,28 +45,27 @@ $("#connections").on("click", function() {
 	$("#post").html("");
 	$.get("/feed-connects-json", {"offset": 0}, function(results) {
 		for (var i=0; i < results["results"].length; i++) {
-			$("#post").append("<h1>" + results["results"][i][1] 
+			$("#post").append("<div class='jumbotron'><h1>" + results["results"][i][1] 
 				+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3,4) +
 				"''>" + results["results"][i][0] + "</a> </h2>"
 				+ results["results"][i].slice(2,3) + " <a href='/update/" + results["results"][i].slice(4) 
-				+ "'>Link to Update</a>" + "<br>");
+				+ "'>Link to Update</a>" + "<br></div>");
 		}
 	$("#connectionoffset").val(currentOffset + 20)
 	}
 )});
 
-// ($(this)[0].scrollHeight - 20)
 
 $(window).scroll(function() {
 	var currentOffset = parseInt($("#offset").val());
 	if (window.scrollY + window.innerHeight >= document.body.scrollHeight) { 
 		$.get("/feed-all-json", {"offset": currentOffset}, function(results) {
 			for (var i=0; i < results["results"].length; i++) {
-				$("#post").append("<h1>" + results["results"][i][1] 
+				$("#post").append("<div class='jumbotron'><h1>" + results["results"][i][1] 
 					+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3,4) +
 					"''>" + results["results"][i][0] + "</a> </h2>" 
 					+ results["results"][i].slice(2,3) + " <a href='/update/" + results["results"][i].slice(4) 
-					+ "'>Link to Update</a>" + "<br>");
+					+ "'>Link to Update</a>" + "<br></div>");
 			}
 			$("#offset").val(currentOffset + 20);
 		} 
@@ -82,11 +81,11 @@ $(window).scroll(function() {
 			}
 			else {
 				for (var i=0; i < results["results"].length; i++) {
-					$("#post").append("<h1>" + results["results"][i][1] 
+					$("#post").append("<div class='jumbotron'><h1>" + results["results"][i][1] 
 						+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3,4) +
 						"''>" + results["results"][i][0] + "</a> </h2>" 
 						+ results["results"][i].slice(2,3) + " <a href='/update/" + results["results"][i].slice(4) 
-						+ "'>Link to Update</a>" + "<br>");
+						+ "'>Link to Update</a>" + "<br></div>");
 			}
 			$("#connectionoffset").val(currentOffset + 20);
 			}; 

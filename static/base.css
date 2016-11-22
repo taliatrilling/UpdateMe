@@ -1,3 +1,41 @@
 body { 
 	padding-top: 70px; 
+  	background-image: url(/static/images/grey_@2X.png);
+  	font-family: 'Open Sans', sans-serif;
+}
+
+/* Background pattern from subtlepatterns.com */
+
+
+.navbar {
+	font-family: 'Raleway', sans-serif;
+	background-color: #e0d8e1;
+	color: #000000;
+}
+
+h1 h2{
+	font-family: 'Raleway', sans-serif;
+}
+
+
+h3 {
+	font-family: 'Open Sans', sans-serif;
+}
+
+.tab {
+	font-family: 'Raleway', sans-serif;
+	color: #000000;
+	font-size: 20px;
+}
+
+a:link {
+	color: #5f5e78;
+}
+
+a:visited {
+	color: #5f5e78;
+}
+
+a:hover {
+	color: #5f5e78;
 }
