@@ -56,28 +56,39 @@
 	{% if "user_id" in session %}
 		<script>
 
-		console.log('running extra js');
+
 
 		$.get("/get-notifications-json", function(results) {
-			console.log(results);
-			for (var i=0; i < results["results"].length; i++) {
 
-				console.log(results['results'][i]);
+			for (var i=0; i < results["results"].length; i++) {
 
 
 				if (results["results"][i][1] === "req") {
-					console.log('door #1');
-					var n = $("#notification").noty({type: "information", text: "You have a new connection request to review"});
+
+					var note_id = results["results"][i][0]
+					var n = $("#notification").noty({type: "information", text: "You have a new connection request to review",
+						callback: {onClose: function() {$.post("/update-notifications-json", {"notification_id": note_id})
+							}
+						}
+					});
 				}
 				else if (results["results"][i][1] === "msg") {
-					console.log('door #2');
-					var n = $("#notification").noty({type: "information", text: "You have a new message from a connection"});
+
+					var note_id = results["results"][i][0]
+					var n = $("#notification").noty({type: "information", text: "You have a new message from a connection",
+						callback: {onClose: function() {$.post("/update-notifications-json", {"notification_id": note_id})
+							}
+						}
+					});
 				}
 				else if (results["results"][i][1] === "apr") {
-					console.log('door #3');
-					var n = $("#notification").noty({type: "information", text: "Your requested connection has been approved!"});
+
+					var n = $("#notification").noty({type: "information", text: "Your requested connection has been approved!",
+						callback: {onClose: function() {$.post("/update-notifications-json", {"notification_id": note_id})
+							}
+						}
+					});
 				}
-				// post request to json route 
 		}});
 	
 		</script>

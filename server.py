@@ -785,8 +785,14 @@ def get_notifications_for_ajax():
 	notifications = find_notifications_not_viewed(user_id)
 	return jsonify({"results": notifications})
 
-#need to call change_notification_to_viewed(notification_id)
 
+@app.route("/update-notifications-json", methods=["POST"])
+def update_notifications_from_ajax():
+	"""Takes from flask route/ajax info that notifcation was clicked on, subsequently updates the notification to having been viewed"""
+
+	notification_id = request.form.get("notification_id")
+	change_notification_to_viewed(notification_id)
+	return "success"
 
 if __name__ == '__main__':
 	app.debug = True
