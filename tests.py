@@ -43,9 +43,9 @@ class LogicTestCases(unittest.TestCase):
 			(Comment.query.filter(Comment.comment_body == "uh whatever you say...").first()).comment_id)
 
 	def test_display_comments(self):
-		comments = {1 :{"comment on": 2, "posted by": "wrex", "posted at": "0:02 UTC on November 11, 2016", "body": "Shepard."}, 
-		2: {"comment on": 2, "posted by": "shepard", "posted at": "0:02 UTC on November 11, 2016", "body": "Wrex."},
-		3: {"comment on": 2, "posted by": "garrus", "posted at": "0:02 UTC on November 11, 2016", "body": "you guys are weird..."}}
+		comments = {1 :{"comment on": 2, "posted by": "wrex", "posted at": "0:02 UTC on November 11, 2016", "body": "Shepard.", "user_id": 3}, 
+		2: {"comment on": 2, "posted by": "shepard", "posted at": "0:02 UTC on November 11, 2016", "body": "Wrex.", "user_id": 1},
+		3: {"comment on": 2, "posted by": "garrus", "posted at": "0:02 UTC on November 11, 2016", "body": "you guys are weird...", "user_id": 2}}
 		self.assertEqual(s.display_comments(2),comments)
 
 	def test_check_inbox(self):

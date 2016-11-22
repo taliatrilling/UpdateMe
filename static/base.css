@@ -6,11 +6,11 @@ body {
 
 /* Background pattern from subtlepatterns.com */
 
-
 .navbar {
 	font-family: 'Raleway', sans-serif;
 	background-color: #e0d8e1;
 	color: #000000;
+	font-size: 18px;
 }
 
 h1 h2{
