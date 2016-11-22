@@ -56,15 +56,17 @@ def add_user(username, password, is_public):
 
 def check_user_credentials(username, password):
 	"""Checks the validity of a username and password"""
-
+	
 	user = User.query.filter(User.username == username).first()
-	password_hashed = User.validate_password(user, password)
-
-	if password_hashed:
-		user_id = user.user_id
-		username = user.username
-		return user_id
-	else:
+	if user is not None:
+		password_hashed = User.validate_password(user, password)
+		if password_hashed:
+			user_id = user.user_id
+			username = user.username
+			return user_id
+		else:
+			return False
+	else: 
 		return False
 
 def submit_update(user_id, body):

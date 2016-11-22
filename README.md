@@ -12,7 +12,10 @@ UpdateMe is a Twitter clone created by Talia Trilling for her Hackbright Academy
 * AJAX/JSON
 * Bootstrap
 * BCrypt/Passlib
-* HTML/CSS
+* noty
+* Faker/factory boy
+* unittests
+
 
 (for specific dependencies, see requirements.txt)
 
@@ -21,7 +24,8 @@ UpdateMe is a Twitter clone created by Talia Trilling for her Hackbright Academy
 1. Navigate to the directory where you have cloned this repo, create a python virtual environment, and install the required dependencies:
 `pip install -r requirements.txt`
 2. Make sure that you have PostgreSQL installed, and then enter in your command line shell:
-`createdb twitterclone` 
+`createdb twitterclone`
+
 `python model.py` 
 4. To begin running the application server, enter in your command line shell: 
 `python server.py` 
