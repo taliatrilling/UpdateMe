@@ -6,7 +6,7 @@ from flask import (Flask, render_template, redirect, request, session, flash, js
 
 from flask_debugtoolbar import DebugToolbarExtension
 
-from model import User, Update, Comment, Pair, Message, Request, connect_to_db, db
+from model import User, Update, Comment, Pair, Message, Request, Notification, connect_to_db, db
 
 from datetime import datetime
 
@@ -298,10 +298,36 @@ def get_num_messages_between(pair_id):
 	return int(message_count)
 
 def allowed_file(filename):
-	""" """
+	"""Checks that user uploaded files are in the correct/allowed format"""
 
 	#see http://flask.pocoo.org/docs/0.11/patterns/fileuploads/
 	return "." in filename and filename.rsplit(".", 1)[1] in ALLOWED_EXTENSIONS
+
+def add_notification(user_id, notification_type):
+	"""Adds a notification to the db, which will then later be used by AJAX to display notifications to the user"""
+
+	notification = Notification(user_id=user_id, notification_type=notification_type, added_at=datetime.now())
+	db.session.add(notification)
+	db.session.commit()
+
+	return notification.notification_id
+
+def change_notification_to_viewed(notification_id):
+	"""Changes the viewed column for a specific notification to 'True' so that it will no longer alert the user"""
+
+	notification = Notification.query.get(notification_id)
+	notification.viewed = True
+	db.session.commit()
+	return notification.viewed
+
+def find_notifications_not_viewed(user_id):
+	"""For a given user, returns all current notifications in db that haven't yet been viewed"""
+
+	notifications = Notification.query.filter(Notification.user_id == user_id, Notification.viewed == False).all()
+	notification_list = []
+	for notification in notifications:
+		notification_list.append([notification.notification_id, notification.notification_type])
+	return notification_list
 
 #routes:
 
@@ -551,6 +577,8 @@ def submit_message():
 
 	pair = pair_lookup(user_id, recipient_id)
 
+	add_notification(recipient_id, "msg")
+
 	flash("Your message has been sent!")
 	return redirect("/message/" + str(pair))
 
@@ -568,6 +596,8 @@ def submit_reply_message():
 	submit_message_to_db(user_id, other_user_id, message_body)
 
 	pair = pair_lookup(user_id, other_user_id)
+
+	add_notification(other_user_id, "msg")
 
 	flash("Your message has been sent!")
 	return redirect("/message/" + str(pair))
@@ -666,6 +696,7 @@ def request_connection(other_user_id):
 		return redirect("/profile/" + str(other_user_id))
 
 	add_connection_request(current_user_id, other_user_id)
+	add_notification(other_user_id, "req")
 	flash("Your request has been sent")
 	return redirect("/profile/" + str(other_user_id))
 
@@ -690,6 +721,7 @@ def approve_request(request_id):
 	user_connecting_with_id = (Request.query.filter(Request.request_id == request_id).first()).requester_id
 	add_pair_to_db(current_user_id, user_connecting_with_id)
 	other_user_username = (User.query.get(user_connecting_with_id)).username
+	add_notification(user_connecting_with_id, "apr")
 	flash("You have successfully connected with" + other_user_username)
 	return redirect("/review-connection-requests")
 
@@ -726,7 +758,8 @@ def see_more_messages_in_hist():
 
 @app.route("/submit-profile-pic/<int:user_id>", methods=['GET', 'POST'])
 def upload_user_pic(user_id):
-	""" """
+	"""Uploads a user-submitted profile picrture to the static images folder"""
+	#FMI see http://flask.pocoo.org/docs/0.11/patterns/fileuploads/
 
 	user_id = session["user_id"]
 	to_name = "user" + str(user_id) + ".png"
@@ -744,6 +777,15 @@ def upload_user_pic(user_id):
 			file.save(os.path.join(UPLOAD_FOLDER, to_name))
 			return redirect("/profile/" + str(user_id))
 
+@app.route("/get-notifications-json")
+def get_notifications_for_ajax():
+	"""Grabs current existing notifications in db for current user to be added via AJAX on front end"""
+
+	user_id = session["user_id"]
+	notifications = find_notifications_not_viewed(user_id)
+	return jsonify({"results": notifications})
+
+#need to call change_notification_to_viewed(notification_id)
 
 
 if __name__ == '__main__':

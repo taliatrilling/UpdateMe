@@ -55,8 +55,20 @@
 		<script type="text/javascript" src="static/js/noty-2.3.8/js/noty/packaged/jquery.noty.packaged.min.js"></script>
 		<script>
 
-		noteMessage = "yo"
-		var n = $("#notification").noty({type: "information", text: noteMessage});		
+		$.get("/get-notifications-json", function(results) {
+			for (var i=0; i < results["results"].length; i++) {
+				if (results["results"][i][1] === "req") {
+					var n = $("#notification").noty({type: "information", text: "You have a new connection request to review"});
+				}
+				else if (results["results"][i][1] === "msg") {
+					var n = $("#notification").noty({type: "information", text: "You have a new message from a connection"});
+				}
+				else if (results["results"][i][1] === "apr") {
+					var n = $("#notification").noty({type: "information", text: "Your requested connection has been approved!"});
+				}
+				// something to change the notification to viewed when clicked!	-- use noty callback functions, but need python side code
+		}})
+	
 
 		</script>
 	</body>

@@ -1,6 +1,6 @@
 from server import app
 import server as s 
-from model import User, Update, Comment, Pair, Message, Request, connect_to_db, db, fake_test_data
+from model import User, Update, Comment, Pair, Message, Request, Notification, connect_to_db, db, fake_test_data
 import unittest
 from flask_sqlalchemy import SQLAlchemy 
 from flask import (Flask, render_template, redirect, request, session, flash, jsonify)
@@ -119,6 +119,16 @@ class LogicTestCases(unittest.TestCase):
 
 	def test_get_num_messages_when_none(self):
 		self.assertEqual(s.get_num_messages_between(3), 0)
+
+	def test_add_notifications(self):
+		self.assertEqual(s.add_notification(1, "msg"), 4)
+
+	def test_change_notification_to_viewed(self):
+		self.assertEqual(s.change_notification_to_viewed(1), True)
+
+	def test_find_notifications_not_viewed(self):
+		notifications = [[1, "msg"], [2, "req"]]
+		self.assertEqual(s.find_notifications_not_viewed(1), notifications)
 
 	def tearDown(self):
 		db.session.close()
@@ -239,6 +249,13 @@ class RouteTestCasesSession(unittest.TestCase):
 		verified = bcrypt.verify("n7lady", password_in_db)
 		self.assertTrue(verified)
 
+	def test_feed_json_connections(self):
+		result = self.client.get("/feed-connects-json")
+		self.assertEqual('{\n  "results": [\n    [\n      "garrus", \n      "just in the middle of some calibrations", \n      "0:02 UTC on November 11, 2016", \n      2, \n      1\n    ], \n    [\n      "liara", \n      "please stop calling me the shadow broker, I\'m totally not her--I mean, them...", \n      "0:02 UTC on November 11, 2016", \n      4, \n      3\n    ]\n  ]\n}\n', result.data)
+
+	def test_get_notifications_for_ajax_when_exist(self):
+		result = self.client.get("/get-notifications-json")
+		self.assertEqual('{\n  "results": [\n    [\n      1, \n      "msg"\n    ], \n    [\n      2, \n      "req"\n    ]\n  ]\n}\n', result.data)
 
 	def tearDown(self):
 		db.session.close()
@@ -271,6 +288,10 @@ class RouteTestCasesSessionVersion2(unittest.TestCase):
 	def test_review_requests_none_exist(self):
 		result = self.client.get("/review-connection-requests")
 		self.assertIn("You have no current connection requests", result.data)
+
+	def test_get_notifications_for_ajax_when_none(self):
+		result = self.client.get("/get-notifications-json")
+		self.assertEqual('{\n  "results": []\n}\n', result.data)
 
 	def tearDown(self):
 		db.session.close()
@@ -352,7 +373,6 @@ class RouteTestCasesNoSession(unittest.TestCase):
 		result = self.client.get("/profile/1")
 		self.assertIn("Redirecting..", result.data)
 		self.assertNotIn("shepard", result.data)
-
 
 	def tearDown(self):
 		db.session.close()

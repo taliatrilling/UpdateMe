@@ -147,7 +147,24 @@ class Request(db.Model):
 		return ("<request_id=%d requester_id=%d requestee_id=%d>"
 				% (self.request_id, self.requester_id, self.requestee_id))
 
+class Notification(db.Model):
+	"""Notifications to display to a user, after clicked on, 'viewed' column is updated"""
 
+	__tablename__ = "notifications"
+
+	notification_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+	notification_type = db.Column(db.String(10), nullable=False) # "msg", "req", "apr"
+	added_at = db.Column(db.DateTime, nullable=False)
+	viewed = db.Column(db.Boolean, default=False)
+
+	user = db.relationship("User", backref="notifications")
+
+	def __repr__(self):
+		"""Provides useful representation of an instance when printed"""
+
+		return ("<notification_id=%d user_id=%d notification_type=%s>" 
+			% (self.notification_id, self.user_id, self.notification_type))
 
 def fake_test_data():
 	"""Creates sample data for unittests to use"""
@@ -179,9 +196,14 @@ def fake_test_data():
 	request1 = Request(requester_id=4, requestee_id=2)
 	request2 = Request(requester_id=6, requestee_id=1)
 
+	notification1 = Notification(user_id=1, notification_type="msg", added_at=datetime(2016, 11, 11, 0, 15, 0, 59559))
+	notification2 = Notification(user_id=1, notification_type="req", added_at=datetime(2016, 11, 11, 0, 15, 0, 59559))
+	notification3 = Notification(user_id=2, notification_type="req", added_at=datetime(2016, 11, 11, 0, 15, 0, 59559))
+
 	db.session.add_all([user1, user2, user3, user4, user5, user6, update1, update2, 
 		update3, update4, comment1, comment2, comment3, message1, message2, 
-		connection1, connection2, connection3, connection4, request1, request2])
+		connection1, connection2, connection3, connection4, request1, request2,
+		notification1, notification2, notification3])
 	db.session.commit()
 
 
