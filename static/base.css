@@ -39,3 +39,7 @@ a:visited {
 a:hover {
 	color: #5f5e78;
 }
+
+#loadingDiv {
+	text-align: center;
+}

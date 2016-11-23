@@ -11,14 +11,25 @@
 	<li><a href="#" id="connections" class="tab">Updates from Your Connections</a></li>
 {% endif %}
 	<br><br>
+	</ul>
 	<div id="post" class="container"></div>
+	<div id="loadingDiv"> <img src="/static/images/loading.gif" style="height: 5%"></div>
 	<input type="hidden" id="offset" value="0">
 	<input type="hidden" id="connectionoffset" value="0">
-</ul>
 </div>
 
 <script>
 
+//help from https://stackoverflow.com/questions/68485/how-to-show-loading-spinner-in-jquery
+//loading gif from http://loading.io/
+
+var $loading = $("#loadingDiv").hide();
+$(document).ajaxStart(function () {
+	$loading.show();
+})
+	.ajaxStop(function () {
+		$loading.hide();
+	});
 
 
 $("#all").on("click", function(evt) {
