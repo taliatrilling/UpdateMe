@@ -29,8 +29,11 @@ class LogicTestCases(unittest.TestCase):
 		self.assertEqual(s.check_user_credentials("shepard", "password123"),
 			(User.query.filter(User.username == "shepard").first()).user_id)
 
-	def test_check_fake_user_credentials(self):
+	def test_check_fake_password_user_credentials(self):
 		self.assertFalse(s.check_user_credentials("shepard", "lolno"))
+
+	def test_check_user_credentials_user_does_not_exist(self):
+		self.assertFalse(s.check_user_credentials("udina", "willprobablybetrayyou"))
 
 	def test_submit_update(self):
 		user_id = (User.query.filter(User.username == "shepard").first()).user_id
@@ -58,8 +61,11 @@ class LogicTestCases(unittest.TestCase):
 		messages = [{'from': u'garrus', 'read': False, 'msg_id': 2, 'to': u'shepard', 'sent at': '0:15 UTC on November 11, 2016', 'message': u'hell yes'}, {'from': u'shepard', 'read': False, 'msg_id': 1, 'to': u'garrus', 'sent at': '0:13 UTC on November 11, 2016', 'message': u'up for another contest on the citadel later?'}]
 		self.assertEqual(s.get_message_history(1), messages)
 
-	def test_which_pair_by_active_user(self):
+	def test_which_pair_by_active_user_when_user_1_in_pair(self):
 		self.assertEqual(s.which_pair_by_active_user(1, 1), 2) 
+
+	def test_which_pair_by_active_user_when_user_2_in_pair(self):
+		self.assertEqual(s.which_pair_by_active_user(1, 2), 3)
 
 	def test_submit_message_to_db(self):
 		self.assertEqual(s.submit_message_to_db(3, 1, "Shepard."), 3)
@@ -72,7 +78,7 @@ class LogicTestCases(unittest.TestCase):
 		self.assertIsNone(s.pair_lookup(4, 2))
 
 	def test_show_feed_all(self):
-		all_updates = [[u"shepard", u"anyone want to open this bottle of serrice ice I got for Chakwas with me?", "0:02 UTC on November 11, 2016", 1, 2]]
+		all_updates = [[u"shepard", u"anyone want to open this bottle of serrice ice I got for Chakwas with me?", "0:02 UTC on November 11, 2016", 1, 2], [u"jenkins", u"Yay first day at work I'm totally not going to die!", "0:02 UTC on November 11, 2016", 6, 5]]
 		self.assertEqual(s.show_feed_all(0), all_updates)
 
 	def test_all_connections_for_current_user(self):
@@ -130,6 +136,10 @@ class LogicTestCases(unittest.TestCase):
 		notifications = [[1, "msg"], [2, "req"]]
 		self.assertEqual(s.find_notifications_not_viewed(1), notifications)
 
+	def check_allowed_file_name(self):
+		self.assertTrue("photo.png")
+		self.assertFalse("words.txt")
+
 	def tearDown(self):
 		db.session.close()
 		db.drop_all()
@@ -158,10 +168,6 @@ class RouteTestCasesSession(unittest.TestCase):
 		result = self.client.get("/login")
 		self.assertIn("Redirecting..", result.data)
 
-	def test_logout(self):
-		# not sure how to test this either, since it primarily just deletes session key
-		pass
-
 	def test_compose_update_logged_in(self):
 		result = self.client.get("/compose-update")
 		self.assertIn("<h1>What's on your mind?</h1>", result.data)
@@ -178,6 +184,10 @@ class RouteTestCasesSession(unittest.TestCase):
 	def test_show_specific_update_owner_private_connected(self):
 		result = self.client.get("/update/1")
 		self.assertIn("just in the middle of some calibrations", result.data)
+
+	def test_show_specific_update_owner_public(self):
+		result = self.client.get("/update/5")
+		self.assertIn("Yay first day at work", result.data)
 
 	def test_add_comment_logged_in(self):
 		result = self.client.post("/add-comment/1", data={"comment": "do you ever do anything else??"})
@@ -293,6 +303,11 @@ class RouteTestCasesSessionVersion2(unittest.TestCase):
 		result = self.client.get("/get-notifications-json")
 		self.assertEqual('{\n  "results": []\n}\n', result.data)
 
+	def test_show_messages_not_in_pair(self):
+		result = self.client.get("/message/1")
+		self.assertIn("Redirecting", result.data)
+		self.assertNotIn("up for another contest on the citadel later?", result.data)
+
 	def tearDown(self):
 		db.session.close()
 		db.drop_all()
@@ -318,17 +333,19 @@ class RouteTestCasesNoSession(unittest.TestCase):
 		result = self.client.get("/register")
 		self.assertIn("Please enter a username (must be between 4 and 20 characters, \n\t\tonly contain valid characters without spaces, and be unique from \n\t\texisting users):", result.data)
 
-	def test_register_success_route(self):
-		result = self.client.post("/register-success", data={"username":"mordin", "password":"sciencelvr", "is_public":"1"})
+	def test_register_success_route_private(self):
+		result = self.client.post("/register-success", data={"username":"mordin", "password":"sciencelvr", "is_public":"2"})
 		self.assertIsNotNone(User.query.filter(User.username == "mordin").first())
+		self.assertFalse((User.query.filter(User.username == "mordin").first()).is_public)
+
+	def test_register_success_route_public(self):
+		result = self.client.post("/register-success", data={"username":"aria", "password":"omegaqueen", "is_public":"1"})
+		self.assertIsNotNone(User.query.filter(User.username == "aria").first())
+		self.assertTrue((User.query.filter(User.username == "aria").first()).is_public)
 
 	def test_login_route(self):
 		result = self.client.get("/login")
 		self.assertIn("<h1>Log In</h1>", result.data)
-
-	def test_login_success(self):
-		result = self.client.post("/login-success", data={"username":"shepard", "password":"password123"})
-		#find way to test? NEED TO ADDRESS
 
 	def test_compose_update_not_logged_in(self):
 		result = self.client.get("/compose-update")
@@ -362,7 +379,7 @@ class RouteTestCasesNoSession(unittest.TestCase):
 
 	def test_feed_all_json(self):
 		result = self.client.get("/feed-all-json")
-		self.assertEqual('{\n  "results": [\n    [\n      "shepard", \n      "anyone want to open this bottle of serrice ice I got for Chakwas with me?", \n      "0:02 UTC on November 11, 2016", \n      1, \n      2\n    ]\n  ]\n}\n', result.data)
+		self.assertEqual('{\n  "results": [\n    [\n      "shepard", \n      "anyone want to open this bottle of serrice ice I got for Chakwas with me?", \n      "0:02 UTC on November 11, 2016", \n      1, \n      2\n    ], \n    [\n      "jenkins", \n      "Yay first day at work I\'m totally not going to die!", \n      "0:02 UTC on November 11, 2016", \n      6, \n      5\n    ]\n  ]\n}\n', result.data)
 
 	def test_search_results(self):
 		result = self.client.get("/search-results", query_string={"search":"shepard"})
@@ -373,6 +390,15 @@ class RouteTestCasesNoSession(unittest.TestCase):
 		result = self.client.get("/profile/1")
 		self.assertIn("Redirecting..", result.data)
 		self.assertNotIn("shepard", result.data)
+
+	def test_check_if_username_is_available_when_is(self):
+		result = self.client.get("/check-username", query_string={"username":"kasumi"})
+		self.assertIn("available", result.data)
+
+
+	def test_check_if_user_is_available_when_not(self):
+		result = self.client.get("/check-username", query_string={"username":"shepard"})
+		self.assertIn("exists", result.data)
 
 	def tearDown(self):
 		db.session.close()

@@ -178,8 +178,9 @@ def fake_test_data():
 
 	update1 = Update(user_id=2, update_body="just in the middle of some calibrations", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
 	update2 = Update(user_id=1, update_body="anyone want to open this bottle of serrice ice I got for Chakwas with me?", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
-	update3= Update(user_id=4, update_body="please stop calling me the shadow broker, I'm totally not her--I mean, them...", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
-	update4= Update(user_id=5, update_body="I'm so going to betray Nihlus ;)", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
+	update3 = Update(user_id=4, update_body="please stop calling me the shadow broker, I'm totally not her--I mean, them...", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
+	update4 = Update(user_id=5, update_body="I'm so going to betray Nihlus ;)", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
+	update5 = Update(user_id=6, update_body="Yay first day at work I'm totally not going to die!", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
 
 	comment1 = Comment(update_id=2, user_id=3, comment_body="Shepard.", posted_at=datetime(2016, 11, 11, 0, 2, 45, 185511))
 	comment2 = Comment(update_id=2, user_id=1, comment_body="Wrex.", posted_at=datetime(2016, 11, 11, 0, 2, 45, 185511))
@@ -201,7 +202,7 @@ def fake_test_data():
 	notification3 = Notification(user_id=2, notification_type="req", added_at=datetime(2016, 11, 11, 0, 15, 0, 59559))
 
 	db.session.add_all([user1, user2, user3, user4, user5, user6, update1, update2, 
-		update3, update4, comment1, comment2, comment3, message1, message2, 
+		update3, update4, update5, comment1, comment2, comment3, message1, message2, 
 		connection1, connection2, connection3, connection4, request1, request2,
 		notification1, notification2, notification3])
 	db.session.commit()
