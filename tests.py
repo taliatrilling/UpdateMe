@@ -5,6 +5,7 @@ import unittest
 from flask_sqlalchemy import SQLAlchemy 
 from flask import (Flask, render_template, redirect, request, session, flash, jsonify)
 from passlib.hash import bcrypt
+import os.path
 
 
 class LogicTestCases(unittest.TestCase):
@@ -259,6 +260,11 @@ class RouteTestCasesSession(unittest.TestCase):
 		verified = bcrypt.verify("n7lady", password_in_db)
 		self.assertTrue(verified)
 
+	def test_change_password_failure(self):
+		result = self.client.post("/preferences/change-password-success", data={"current_password":"pass", "new_password":"n7lady"})
+		self.assertIn("Redirecting", result.data)
+
+
 	def test_feed_json_connections(self):
 		result = self.client.get("/feed-connects-json")
 		self.assertEqual('{\n  "results": [\n    [\n      "garrus", \n      "just in the middle of some calibrations", \n      "0:02 UTC on November 11, 2016", \n      2, \n      1\n    ], \n    [\n      "liara", \n      "please stop calling me the shadow broker, I\'m totally not her--I mean, them...", \n      "0:02 UTC on November 11, 2016", \n      4, \n      3\n    ]\n  ]\n}\n', result.data)
@@ -266,6 +272,11 @@ class RouteTestCasesSession(unittest.TestCase):
 	def test_get_notifications_for_ajax_when_exist(self):
 		result = self.client.get("/get-notifications-json")
 		self.assertEqual('{\n  "results": [\n    [\n      1, \n      "msg"\n    ], \n    [\n      2, \n      "req"\n    ]\n  ]\n}\n', result.data)
+
+	def test_upload_user_pic_when_valid(self):
+		result = self.client.post("/submit-profile-pic/1", data={"file":"img.png"})
+		file_to_check = "static/images/user" + str(1) + ".png"
+		self.assertTrue(os.path.isfile(file_to_check))
 
 	def tearDown(self):
 		db.session.close()
@@ -394,7 +405,6 @@ class RouteTestCasesNoSession(unittest.TestCase):
 	def test_check_if_username_is_available_when_is(self):
 		result = self.client.get("/check-username", query_string={"username":"kasumi"})
 		self.assertIn("available", result.data)
-
 
 	def test_check_if_user_is_available_when_not(self):
 		result = self.client.get("/check-username", query_string={"username":"shepard"})
