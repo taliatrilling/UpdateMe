@@ -1,6 +1,7 @@
 # UpdateMe [![Build Status](https://travis-ci.org/taliatrilling/UpdateMe.svg?branch=master)](https://travis-ci.org/taliatrilling/UpdateMe)
 
 UpdateMe is a Twitter clone created by Talia Trilling for her Hackbright Academy Final Project. 
+
 ![UpdateMe Homepage](/static/images/homepage.png)
 
 ## Technology Stack:
