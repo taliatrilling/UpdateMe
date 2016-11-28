@@ -724,7 +724,7 @@ def approve_request(request_id):
 	add_pair_to_db(current_user_id, user_connecting_with_id)
 	other_user_username = (User.query.get(user_connecting_with_id)).username
 	add_notification(user_connecting_with_id, "apr")
-	flash("You have successfully connected with" + other_user_username)
+	flash("You have successfully connected with " + other_user_username)
 	return redirect("/review-connection-requests")
 
 
@@ -797,7 +797,7 @@ def update_notifications_from_ajax():
 	return "success"
 
 if __name__ == '__main__':
-	app.debug = True
+	app.debug = False
 	app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 	connect_to_db(app)
 	DebugToolbarExtension(app)
