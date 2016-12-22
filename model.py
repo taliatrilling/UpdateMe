@@ -15,7 +15,7 @@ class User(db.Model):
 
 	__tablename__ = "users"
 
-	user_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	user_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullale=False)
 	username = db.Column(db.String(20), nullable=False, unique=True)
 	password = db.Column(db.String(80), nullable=False)
 	joined_at = db.Column(db.DateTime, nullable=False)
@@ -50,7 +50,7 @@ class Update(db.Model):
 
 	__tablename__ = "updates"
 
-	update_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	update_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullale=False)
 	user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 	update_body = db.Column(db.String(140), nullable=False)
 	posted_at = db.Column(db.DateTime, nullable=False)
@@ -70,7 +70,7 @@ class Comment(db.Model):
 
 	__tablename__ = "comments"
 
-	comment_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	comment_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullale=False)
 	update_id = db.Column(db.Integer, db.ForeignKey("updates.update_id"), nullable=False)
 	user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 	comment_body = db.Column(db.String(140), nullable=False)
@@ -94,7 +94,7 @@ class Pair(db.Model):
 	#table 
 	__tablename__ = "pairs" 
 
-	pair_id = db.Column(db.Integer, autoincrement=True, primary_key=True) #change to UUID version 4 potentially 
+	pair_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullale=False) #change to UUID version 4 potentially 
 	user_1_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 	user_2_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 
@@ -112,7 +112,7 @@ class Message(db.Model):
 
 	__tablename__ = "messages"
 
-	msg_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	msg_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullale=False)
 	owner_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 	recipient_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 	sent_at = db.Column(db.DateTime, nullable=False)
@@ -134,7 +134,7 @@ class Request(db.Model):
 
 	__tablename__ = "requests"
 
-	request_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	request_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullale=False)
 	requester_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 	requestee_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 
@@ -152,11 +152,11 @@ class Notification(db.Model):
 
 	__tablename__ = "notifications"
 
-	notification_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	notification_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullale=False)
 	user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 	notification_type = db.Column(db.String(10), nullable=False) # "msg", "req", "apr"
 	added_at = db.Column(db.DateTime, nullable=False)
-	viewed = db.Column(db.Boolean, default=False)
+	viewed = db.Column(db.Boolean, default=False, nullable=False)
 
 	user = db.relationship("User", backref="notifications")
 
