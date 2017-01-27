@@ -3,3 +3,4 @@ env
 *.pyc
 .DS_Store
 *factory_set_up*
+.coverage
