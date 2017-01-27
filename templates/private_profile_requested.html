@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+
+<div class="container">
+<h1>{{ user_of_interest.username }}</h1>
+
+<img src="/{{ picture_url }}" style="height: 25%; width: 25%; object-fit: contain">
+
+
+<h2>{{ user_of_interest.username }}'s account is private and you have already requested access</h2>
+
+</div>
+
+
+{% endblock %}

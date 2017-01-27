@@ -331,6 +331,13 @@ def find_notifications_not_viewed(user_id):
 		notification_list.append([notification.notification_id, notification.notification_type])
 	return notification_list
 
+def get_request_id(current_user_id, other_user_id):
+	"""For two given users, returns the id for their connection request"""
+
+	r_id = Request.query.filter((Request.requester_id == current_user_id) | (Request.requester_id == other_user_id),
+		(Request.requestee_id == current_user_id) | (Request.requestee_id == other_user_id)).first()
+	return r_id
+
 #routes:
 
 @app.route("/")
@@ -663,6 +670,7 @@ def show_profile(user_id):
 			if pair_lookup(user_of_interest.user_id, current_user_id):
 				updates = all_updates_for_specific_user(user_id)
 				return render_template("public_profile_connected.html", user_of_interest=user_of_interest, updates=updates, picture_url=picture_url)
+			#add elif for requested/requestee both
 			else:
 				updates = all_updates_for_specific_user(user_id)
 				return render_template("public_profile.html", user_of_interest=user_of_interest, updates=updates, picture_url=picture_url)
@@ -670,6 +678,11 @@ def show_profile(user_id):
 			if pair_lookup(user_of_interest.user_id, current_user_id):
 				updates = all_updates_for_specific_user(user_of_interest.user_id)
 				return render_template("shared_private_profile.html", user_of_interest=user_of_interest, updates=updates, picture_url=picture_url)
+			elif user_of_interest.username in usernames_behind_connection_requests(get_connection_requests(current_user_id)):
+				connect_id = get_request_id(current_user_id, user_of_interest)
+				return render_template("profile_private_requestee.html", user_of_interest=user_of_interest, picture_url=picture_url, connect_id=connect_id)
+			elif session["username"] in usernames_behind_connection_requests(get_connection_requests(user_of_interest.user_id)):
+				return render_template("profile_private_requester.html", user_of_interest=user_of_interest, picture_url=picture_url)
 			else:
 				return render_template("profile_private.html", user_of_interest=user_of_interest, picture_url=picture_url)
 	else:
