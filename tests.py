@@ -1,10 +1,11 @@
 from server import app
 import server as s 
-from model import User, Update, Comment, Pair, Message, Request, connect_to_db, db, fake_test_data
+from model import User, Update, Comment, Pair, Message, Request, Notification, connect_to_db, db, fake_test_data
 import unittest
 from flask_sqlalchemy import SQLAlchemy 
 from flask import (Flask, render_template, redirect, request, session, flash, jsonify)
 from passlib.hash import bcrypt
+import os.path
 
 
 class LogicTestCases(unittest.TestCase):
@@ -29,8 +30,11 @@ class LogicTestCases(unittest.TestCase):
 		self.assertEqual(s.check_user_credentials("shepard", "password123"),
 			(User.query.filter(User.username == "shepard").first()).user_id)
 
-	def test_check_fake_user_credentials(self):
+	def test_check_fake_password_user_credentials(self):
 		self.assertFalse(s.check_user_credentials("shepard", "lolno"))
+
+	def test_check_user_credentials_user_does_not_exist(self):
+		self.assertFalse(s.check_user_credentials("udina", "willprobablybetrayyou"))
 
 	def test_submit_update(self):
 		user_id = (User.query.filter(User.username == "shepard").first()).user_id
@@ -43,9 +47,9 @@ class LogicTestCases(unittest.TestCase):
 			(Comment.query.filter(Comment.comment_body == "uh whatever you say...").first()).comment_id)
 
 	def test_display_comments(self):
-		comments = {1 :{"comment on": 2, "posted by": "wrex", "posted at": "0:02 UTC on November 11, 2016", "body": "Shepard."}, 
-		2: {"comment on": 2, "posted by": "shepard", "posted at": "0:02 UTC on November 11, 2016", "body": "Wrex."},
-		3: {"comment on": 2, "posted by": "garrus", "posted at": "0:02 UTC on November 11, 2016", "body": "you guys are weird..."}}
+		comments = {1 :{"comment on": 2, "posted by": "wrex", "posted at": "0:02 UTC on November 11, 2016", "body": "Shepard.", "user_id": 3}, 
+		2: {"comment on": 2, "posted by": "shepard", "posted at": "0:02 UTC on November 11, 2016", "body": "Wrex.", "user_id": 1},
+		3: {"comment on": 2, "posted by": "garrus", "posted at": "0:02 UTC on November 11, 2016", "body": "you guys are weird...", "user_id": 2}}
 		self.assertEqual(s.display_comments(2),comments)
 
 	def test_check_inbox(self):
@@ -55,14 +59,14 @@ class LogicTestCases(unittest.TestCase):
 		self.assertEqual(s.connections(1), [2, 3, 4])
 
 	def test_get_message_history(self):
-		messages = {1: {"to": u"garrus", "from": u"shepard", "message": u"up for another contest on the citadel later?", 
-		"sent at": "0:13 UTC on November 11, 2016", "read": False}, 2: {"to": u"shepard", "from": u"garrus", 
-		"message": u"hell yes", 
-		"sent at": "0:15 UTC on November 11, 2016", "read": False}}
+		messages = [{'from': u'garrus', 'read': False, 'msg_id': 2, 'to': u'shepard', 'sent at': '0:15 UTC on November 11, 2016', 'message': u'hell yes'}, {'from': u'shepard', 'read': False, 'msg_id': 1, 'to': u'garrus', 'sent at': '0:13 UTC on November 11, 2016', 'message': u'up for another contest on the citadel later?'}]
 		self.assertEqual(s.get_message_history(1), messages)
 
-	def test_which_pair_by_active_user(self):
+	def test_which_pair_by_active_user_when_user_1_in_pair(self):
 		self.assertEqual(s.which_pair_by_active_user(1, 1), 2) 
+
+	def test_which_pair_by_active_user_when_user_2_in_pair(self):
+		self.assertEqual(s.which_pair_by_active_user(1, 2), 3)
 
 	def test_submit_message_to_db(self):
 		self.assertEqual(s.submit_message_to_db(3, 1, "Shepard."), 3)
@@ -75,7 +79,7 @@ class LogicTestCases(unittest.TestCase):
 		self.assertIsNone(s.pair_lookup(4, 2))
 
 	def test_show_feed_all(self):
-		all_updates = [[u"shepard", u"anyone want to open this bottle of serrice ice I got for Chakwas with me?", "0:02 UTC on November 11, 2016", 1, 2]]
+		all_updates = [[u"shepard", u"anyone want to open this bottle of serrice ice I got for Chakwas with me?", "0:02 UTC on November 11, 2016", 1, 2], [u"jenkins", u"Yay first day at work I'm totally not going to die!", "0:02 UTC on November 11, 2016", 6, 5]]
 		self.assertEqual(s.show_feed_all(0), all_updates)
 
 	def test_all_connections_for_current_user(self):
@@ -120,6 +124,23 @@ class LogicTestCases(unittest.TestCase):
 	def test_get_num_messages_between(self):
 		self.assertEqual(s.get_num_messages_between(1), 2)
 
+	def test_get_num_messages_when_none(self):
+		self.assertEqual(s.get_num_messages_between(3), 0)
+
+	def test_add_notifications(self):
+		self.assertEqual(s.add_notification(1, "msg"), 4)
+
+	def test_change_notification_to_viewed(self):
+		self.assertEqual(s.change_notification_to_viewed(1), True)
+
+	def test_find_notifications_not_viewed(self):
+		notifications = [[1, "msg"], [2, "req"]]
+		self.assertEqual(s.find_notifications_not_viewed(1), notifications)
+
+	def check_allowed_file_name(self):
+		self.assertTrue("photo.png")
+		self.assertFalse("words.txt")
+
 	def tearDown(self):
 		db.session.close()
 		db.drop_all()
@@ -148,10 +169,6 @@ class RouteTestCasesSession(unittest.TestCase):
 		result = self.client.get("/login")
 		self.assertIn("Redirecting..", result.data)
 
-	def test_logout(self):
-		# not sure how to test this either, since it primarily just deletes session key
-		pass
-
 	def test_compose_update_logged_in(self):
 		result = self.client.get("/compose-update")
 		self.assertIn("<h1>What's on your mind?</h1>", result.data)
@@ -168,6 +185,10 @@ class RouteTestCasesSession(unittest.TestCase):
 	def test_show_specific_update_owner_private_connected(self):
 		result = self.client.get("/update/1")
 		self.assertIn("just in the middle of some calibrations", result.data)
+
+	def test_show_specific_update_owner_public(self):
+		result = self.client.get("/update/5")
+		self.assertIn("Yay first day at work", result.data)
 
 	def test_add_comment_logged_in(self):
 		result = self.client.post("/add-comment/1", data={"comment": "do you ever do anything else??"})
@@ -220,10 +241,6 @@ class RouteTestCasesSession(unittest.TestCase):
 		self.assertNotIn("You are currently connected with", result.data)
 		self.assertIn("you may request access below:", result.data)
 
-	def test_feed_connects_json_route(self):
-		pass
-		#again, need guidance on ajax tests
-
 	def test_request_connection_new(self):
 		result = self.client.post("/request-connection/5")
 		self.assertIsNotNone(Request.query.filter(Request.request_id == 3).first())
@@ -242,6 +259,24 @@ class RouteTestCasesSession(unittest.TestCase):
 		password_in_db = User.query.get(1).password
 		verified = bcrypt.verify("n7lady", password_in_db)
 		self.assertTrue(verified)
+
+	def test_change_password_failure(self):
+		result = self.client.post("/preferences/change-password-success", data={"current_password":"pass", "new_password":"n7lady"})
+		self.assertIn("Redirecting", result.data)
+
+
+	def test_feed_json_connections(self):
+		result = self.client.get("/feed-connects-json")
+		self.assertEqual('{\n  "results": [\n    [\n      "garrus", \n      "just in the middle of some calibrations", \n      "0:02 UTC on November 11, 2016", \n      2, \n      1\n    ], \n    [\n      "liara", \n      "please stop calling me the shadow broker, I\'m totally not her--I mean, them...", \n      "0:02 UTC on November 11, 2016", \n      4, \n      3\n    ]\n  ]\n}\n', result.data)
+
+	def test_get_notifications_for_ajax_when_exist(self):
+		result = self.client.get("/get-notifications-json")
+		self.assertEqual('{\n  "results": [\n    [\n      1, \n      "msg"\n    ], \n    [\n      2, \n      "req"\n    ]\n  ]\n}\n', result.data)
+
+	def test_upload_user_pic_when_valid(self):
+		result = self.client.post("/submit-profile-pic/1", data={"file":"img.png"})
+		file_to_check = "static/images/user" + str(1) + ".png"
+		self.assertTrue(os.path.isfile(file_to_check))
 
 	def tearDown(self):
 		db.session.close()
@@ -275,6 +310,15 @@ class RouteTestCasesSessionVersion2(unittest.TestCase):
 		result = self.client.get("/review-connection-requests")
 		self.assertIn("You have no current connection requests", result.data)
 
+	def test_get_notifications_for_ajax_when_none(self):
+		result = self.client.get("/get-notifications-json")
+		self.assertEqual('{\n  "results": []\n}\n', result.data)
+
+	def test_show_messages_not_in_pair(self):
+		result = self.client.get("/message/1")
+		self.assertIn("Redirecting", result.data)
+		self.assertNotIn("up for another contest on the citadel later?", result.data)
+
 	def tearDown(self):
 		db.session.close()
 		db.drop_all()
@@ -294,23 +338,25 @@ class RouteTestCasesNoSession(unittest.TestCase):
 		result = self.client.get("/")
 		self.assertIn("<h1>My Feed</h1>", result.data)
 		self.assertIn("Updates from All Users", result.data)
-		self.assertIn("Updates from Your Connections", result.data)
+		self.assertNotIn("Updates from Your Connections", result.data)
 
 	def test_register_route(self):
 		result = self.client.get("/register")
 		self.assertIn("Please enter a username (must be between 4 and 20 characters, \n\t\tonly contain valid characters without spaces, and be unique from \n\t\texisting users):", result.data)
 
-	def test_register_success_route(self):
-		result = self.client.post("/register-success", data={"username":"mordin", "password":"sciencelvr", "is_public":"1"})
+	def test_register_success_route_private(self):
+		result = self.client.post("/register-success", data={"username":"mordin", "password":"sciencelvr", "is_public":"2"})
 		self.assertIsNotNone(User.query.filter(User.username == "mordin").first())
+		self.assertFalse((User.query.filter(User.username == "mordin").first()).is_public)
+
+	def test_register_success_route_public(self):
+		result = self.client.post("/register-success", data={"username":"aria", "password":"omegaqueen", "is_public":"1"})
+		self.assertIsNotNone(User.query.filter(User.username == "aria").first())
+		self.assertTrue((User.query.filter(User.username == "aria").first()).is_public)
 
 	def test_login_route(self):
 		result = self.client.get("/login")
 		self.assertIn("<h1>Log In</h1>", result.data)
-
-	def test_login_success(self):
-		result = self.client.post("/login-success", data={"username":"shepard", "password":"password123"})
-		#find way to test? NEED TO ADDRESS
 
 	def test_compose_update_not_logged_in(self):
 		result = self.client.get("/compose-update")
@@ -342,17 +388,9 @@ class RouteTestCasesNoSession(unittest.TestCase):
 		result = self.client.get("/compose-message")
 		self.assertIn("Redirecting..", result.data)
 
-	# def test_check_username_for_ajax_does_exist(self):
-	# 	result = self.client.get("/check-username", data={"username": "shepard"})
-	# 	#check how to test ajax routes
-
-	# def test_check_username_for_ajax_does_not_exist(self):
-	# 	result = self.client.get("/check-username", data={"username": "shepardthesecond"})
-		#check how to test ajax routes
-
 	def test_feed_all_json(self):
 		result = self.client.get("/feed-all-json")
-		self.assertEqual('{\n  "results": [\n    [\n      "shepard", \n      "anyone want to open this bottle of serrice ice I got for Chakwas with me?", \n      "0:02 UTC on November 11, 2016", \n      1, \n      2\n    ]\n  ]\n}\n', result.data)
+		self.assertEqual('{\n  "results": [\n    [\n      "shepard", \n      "anyone want to open this bottle of serrice ice I got for Chakwas with me?", \n      "0:02 UTC on November 11, 2016", \n      1, \n      2\n    ], \n    [\n      "jenkins", \n      "Yay first day at work I\'m totally not going to die!", \n      "0:02 UTC on November 11, 2016", \n      6, \n      5\n    ]\n  ]\n}\n', result.data)
 
 	def test_search_results(self):
 		result = self.client.get("/search-results", query_string={"search":"shepard"})
@@ -364,6 +402,13 @@ class RouteTestCasesNoSession(unittest.TestCase):
 		self.assertIn("Redirecting..", result.data)
 		self.assertNotIn("shepard", result.data)
 
+	def test_check_if_username_is_available_when_is(self):
+		result = self.client.get("/check-username", query_string={"username":"kasumi"})
+		self.assertIn("available", result.data)
+
+	def test_check_if_user_is_available_when_not(self):
+		result = self.client.get("/check-username", query_string={"username":"shepard"})
+		self.assertIn("exists", result.data)
 
 	def tearDown(self):
 		db.session.close()

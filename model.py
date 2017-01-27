@@ -15,13 +15,11 @@ class User(db.Model):
 
 	__tablename__ = "users"
 
-	user_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	user_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
 	username = db.Column(db.String(20), nullable=False, unique=True)
 	password = db.Column(db.String(80), nullable=False)
 	joined_at = db.Column(db.DateTime, nullable=False)
 	is_public = db.Column(db.Boolean, nullable=False)
-	#profile_picture
-	#user_preferences ? 
 
 	def __init__(self, username, password, joined_at, is_public, rounds=None):
 		"""Passes in appropriate parameters to user instance, and creates 
@@ -52,7 +50,7 @@ class Update(db.Model):
 
 	__tablename__ = "updates"
 
-	update_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	update_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
 	user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 	update_body = db.Column(db.String(140), nullable=False)
 	posted_at = db.Column(db.DateTime, nullable=False)
@@ -72,7 +70,7 @@ class Comment(db.Model):
 
 	__tablename__ = "comments"
 
-	comment_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	comment_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
 	update_id = db.Column(db.Integer, db.ForeignKey("updates.update_id"), nullable=False)
 	user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 	comment_body = db.Column(db.String(140), nullable=False)
@@ -96,7 +94,7 @@ class Pair(db.Model):
 	#table 
 	__tablename__ = "pairs" 
 
-	pair_id = db.Column(db.Integer, autoincrement=True, primary_key=True) #change to UUID version 4 potentially 
+	pair_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False) #change to UUID version 4 potentially 
 	user_1_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 	user_2_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 
@@ -114,7 +112,7 @@ class Message(db.Model):
 
 	__tablename__ = "messages"
 
-	msg_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	msg_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
 	owner_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 	recipient_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 	sent_at = db.Column(db.DateTime, nullable=False)
@@ -136,7 +134,7 @@ class Request(db.Model):
 
 	__tablename__ = "requests"
 
-	request_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+	request_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
 	requester_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 	requestee_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 
@@ -149,6 +147,24 @@ class Request(db.Model):
 		return ("<request_id=%d requester_id=%d requestee_id=%d>"
 				% (self.request_id, self.requester_id, self.requestee_id))
 
+class Notification(db.Model):
+	"""Notifications to display to a user, after clicked on, 'viewed' column is updated"""
+
+	__tablename__ = "notifications"
+
+	notification_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
+	user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+	notification_type = db.Column(db.String(10), nullable=False) # "msg", "req", "apr"
+	added_at = db.Column(db.DateTime, nullable=False)
+	viewed = db.Column(db.Boolean, default=False, nullable=False)
+
+	user = db.relationship("User", backref="notifications")
+
+	def __repr__(self):
+		"""Provides useful representation of an instance when printed"""
+
+		return ("<notification_id=%d user_id=%d notification_type=%s>" 
+			% (self.notification_id, self.user_id, self.notification_type))
 
 def fake_test_data():
 	"""Creates sample data for unittests to use"""
@@ -162,8 +178,9 @@ def fake_test_data():
 
 	update1 = Update(user_id=2, update_body="just in the middle of some calibrations", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
 	update2 = Update(user_id=1, update_body="anyone want to open this bottle of serrice ice I got for Chakwas with me?", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
-	update3= Update(user_id=4, update_body="please stop calling me the shadow broker, I'm totally not her--I mean, them...", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
-	update4= Update(user_id=5, update_body="I'm so going to betray Nihlus ;)", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
+	update3 = Update(user_id=4, update_body="please stop calling me the shadow broker, I'm totally not her--I mean, them...", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
+	update4 = Update(user_id=5, update_body="I'm so going to betray Nihlus ;)", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
+	update5 = Update(user_id=6, update_body="Yay first day at work I'm totally not going to die!", posted_at=datetime(2016, 11, 11, 0, 2, 16, 227091))
 
 	comment1 = Comment(update_id=2, user_id=3, comment_body="Shepard.", posted_at=datetime(2016, 11, 11, 0, 2, 45, 185511))
 	comment2 = Comment(update_id=2, user_id=1, comment_body="Wrex.", posted_at=datetime(2016, 11, 11, 0, 2, 45, 185511))
@@ -180,9 +197,14 @@ def fake_test_data():
 	request1 = Request(requester_id=4, requestee_id=2)
 	request2 = Request(requester_id=6, requestee_id=1)
 
+	notification1 = Notification(user_id=1, notification_type="msg", added_at=datetime(2016, 11, 11, 0, 15, 0, 59559))
+	notification2 = Notification(user_id=1, notification_type="req", added_at=datetime(2016, 11, 11, 0, 15, 0, 59559))
+	notification3 = Notification(user_id=2, notification_type="req", added_at=datetime(2016, 11, 11, 0, 15, 0, 59559))
+
 	db.session.add_all([user1, user2, user3, user4, user5, user6, update1, update2, 
-		update3, update4, comment1, comment2, comment3, message1, message2, 
-		connection1, connection2, connection3, connection4, request1, request2])
+		update3, update4, update5, comment1, comment2, comment3, message1, message2, 
+		connection1, connection2, connection3, connection4, request1, request2,
+		notification1, notification2, notification3])
 	db.session.commit()
 
 

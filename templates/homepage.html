@@ -6,29 +6,30 @@
 <div class="container-fluid">
 	<h1>My Feed</h1>
 <ul class="nav nav-tabs" role="tablist">
-	<li><a href="#" id="all">Updates from All Users</a></li>
+	<li><a href="#" id="all" class="tab">Updates from All Users</a></li>
 {% if "user_id" in session %}
-	<li><a href="#" id="connections">Updates from Your Connections</a></li>
+	<li><a href="#" id="connections" class="tab">Updates from Your Connections</a></li>
 {% endif %}
 	<br><br>
-	<div id="post"></div>
+	</ul>
+	<div id="post" class="container"></div>
+	<div id="loadingDiv"> <img src="/static/images/loading.gif" style="height: 10%"></div>
 	<input type="hidden" id="offset" value="0">
 	<input type="hidden" id="connectionoffset" value="0">
-</ul>
 </div>
-
-
-
-<script
-  src="https://code.jquery.com/jquery-3.1.1.min.js"
-  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-  crossorigin="anonymous">
-</script>
-
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 <script>
 
+//help from https://stackoverflow.com/questions/68485/how-to-show-loading-spinner-in-jquery
+//loading gif from http://loading.io/
+
+var $loading = $("#loadingDiv").hide();
+$(document).ajaxStart(function () {
+	$loading.show();
+})
+	.ajaxStop(function () {
+		$loading.hide();
+	});
 
 
 $("#all").on("click", function(evt) {
@@ -37,11 +38,11 @@ $("#all").on("click", function(evt) {
 	$("#post").html("");
 	$.get("/feed-all-json", {"offset": 0}, function(results) {
 		for (var i=0; i < results["results"].length; i++) {
-			$("#post").append("<h1>" + results["results"][i][1] 
+			$("#post").append("<div class='jumbotron'><h1>" + results["results"][i][1] 
 				+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3,4) +
 				"''>" + results["results"][i][0] + "</a> </h2>" 
 				+ results["results"][i].slice(2,3) + " <a href='/update/" + results["results"][i].slice(4) 
-				+ "'>Link to Update</a>" + "<br>");
+				+ "'>Link to Update</a>" + "<br></div>");
 		}
 	$("#offset").val(currentOffset + 20);
 	} 
@@ -55,49 +56,53 @@ $("#connections").on("click", function() {
 	$("#post").html("");
 	$.get("/feed-connects-json", {"offset": 0}, function(results) {
 		for (var i=0; i < results["results"].length; i++) {
-			$("#post").append("<h1>" + results["results"][i][1] 
+			$("#post").append("<div class='jumbotron'><h1>" + results["results"][i][1] 
 				+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3,4) +
 				"''>" + results["results"][i][0] + "</a> </h2>"
 				+ results["results"][i].slice(2,3) + " <a href='/update/" + results["results"][i].slice(4) 
-				+ "'>Link to Update</a>" + "<br>");
+				+ "'>Link to Update</a>" + "<br></div>");
 		}
 	$("#connectionoffset").val(currentOffset + 20)
 	}
 )});
 
-// ($(this)[0].scrollHeight - 20)
 
-$(document).scroll(function() {
+$(window).scroll(function() {
 	var currentOffset = parseInt($("#offset").val());
-	if(($(this).scrollTop() + $(this).innerHeight() >= 10 + 1 * (currentOffset/20)) && (currentOffset > 0)) { 
+	if (window.scrollY + window.innerHeight >= document.body.scrollHeight) { 
 		$.get("/feed-all-json", {"offset": currentOffset}, function(results) {
 			for (var i=0; i < results["results"].length; i++) {
-				$("#post").append("<h1>" + results["results"][i][1] 
+				$("#post").append("<div class='jumbotron'><h1>" + results["results"][i][1] 
 					+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3,4) +
 					"''>" + results["results"][i][0] + "</a> </h2>" 
 					+ results["results"][i].slice(2,3) + " <a href='/update/" + results["results"][i].slice(4) 
-					+ "'>Link to Update</a>" + "<br>");
+					+ "'>Link to Update</a>" + "<br></div>");
 			}
 			$("#offset").val(currentOffset + 20);
 		} 
 	)}
 });
 
-$(document).scroll(function() {
+$(window).scroll(function() {
 	var currentOffset = parseInt($("#connectionoffset").val());
-	if(($(this).scrollTop() + $(this).innerHeight() >= 10 + 1 * (currentOffset/20)) && (currentOffset > 0)) { 
+	if (window.scrollY + window.innerHeight >= document.body.scrollHeight) {
 		$.get("/feed-connects-json", {"offset": currentOffset}, function(results) {
-			for (var i=0; i < results["results"].length; i++) {
-				$("#post").append("<h1>" + results["results"][i][1] 
-					+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3,4) +
-					"''>" + results["results"][i][0] + "</a> </h2>" 
-					+ results["results"][i].slice(2,3) + " <a href='/update/" + results["results"][i].slice(4) 
-					+ "'>Link to Update</a>" + "<br>");
+			if (results["results"] === null) {
+				$("#post").append("There are no more updates currently available from your connections")
+			}
+			else {
+				for (var i=0; i < results["results"].length; i++) {
+					$("#post").append("<div class='jumbotron'><h1>" + results["results"][i][1] 
+						+ "</h1>" + "<h2> Posted by: <a href='/profile/" + results["results"][i].slice(3,4) +
+						"''>" + results["results"][i][0] + "</a> </h2>" 
+						+ results["results"][i].slice(2,3) + " <a href='/update/" + results["results"][i].slice(4) 
+						+ "'>Link to Update</a>" + "<br></div>");
 			}
 			$("#connectionoffset").val(currentOffset + 20);
-		} 
-	)}
-});
+			}; 
+		});
+	};
+})
 
 
 </script>

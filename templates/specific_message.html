@@ -9,13 +9,17 @@
 
 {% endif %}
 
-{% for message, content in message_history.items() %}
+<div class="container">
+{% for content in message_history %}
 
+<div class="jumbotron">
 	<h2>To: {{ content["to"] }}<br>From: {{ content["from"] }}</h2>
 	<h3>{{ content["message"] }}</h3>
 	<h4>Sent: {{ content["sent at"] }}</h4>
+</div>
 
 {% endfor %}
+</div>
 
 	<h2>Send a new message to {{ other_user }}:</h2>
 	<form action="/submit-reply-message" method="POST">

@@ -3,21 +3,24 @@
 
 {% block content %}
 <div class="container-fluid">
-<div id="messagecontent">
-{% for message, content in message_history.items() %}
+<div id="messagecontent" class="container">
 
+{% for content in message_history %}
+
+<div class="jumbotron">
 	<h2>To: {{ content["to"] }}<br>From: {{ content["from"] }}</h2>
 	<h3>{{ content["message"] }}</h3>
 	<h4>Sent: {{ content["sent at"] }}</h4>
+</div>
 
 {% endfor %}
 </div>
 
-<form action="">
-	<input type="hidden" value="0" name="offset">
-	<input type="hidden" value="{{ other_user_id }}" name="other_user_id">
-	<input type="submit" id="more" value="See More Messages">
-</form>
+	<input type="hidden" value="5" id="offset">
+	<input type="hidden" value="{{ other_user_id }}" id="other_id" name="other_id">
+	<input type="hidden" value="{{ num_messages }}" id="num_messages">
+	<button id="more">See More Messages</button>
+
 
 	<h2>Send a new message to {{ other_user }}:</h2>
 	<form action="/submit-reply-message" method="POST">
@@ -36,16 +39,21 @@
 <script>
 
 
+
 $("#more").on("click", function(evt) {
 	var currentOffset = parseInt($("#offset").val());
 	$("#messagecontent").html("");
-	$.get("/older-messages.json", {"offset": currentOffset}, function(results) {
+	$.get("/older-messages.json", {"offset": currentOffset, "other_id": $("#other_id").val()}, function(results) {
+		console.log(results)
 		for (var i=0; i < results["results"].length; i++) {
-			$("#messagecontent").append("<h1>" + results["results"][i] + "</h1>"
+			$("#messagecontent").append("<div class='jumbotron'><h2> To: " + results["results"][i]["to"] + "<br>From: " + results["results"][i]["from"] + "</h2> <h3>" + results["results"][i]["message"] + "</h3><h4>Sent: " + results["results"][i]["sent at"] + "</h4></div>");
 		}
-	$("#offset").val(currentOffset + 10);
-	} 
-);
+	$("#offset").val(currentOffset + 5);
+	}) 
+	if (currentOffset + 5 >= $("#num_messages").val()) {
+		$("#more").hide();
+		$("messagecontent").append("<h1>This is the end of your message history with this user</h1>");
+	};
 });
 
 $("#message").on("change", function() {

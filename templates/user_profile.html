@@ -3,12 +3,31 @@
 
 {% block content %}
 
-<div class="container-fluid">
+<div class="container">
 <h1>Your Profile</h1>
+
+
+<img src="/{{ picture_url }}" style="height: 25%; width: 25%; object-fit: contain">
+
+
+<h2>Would you like to add a new profile picture?</h2>
+<form action="/submit-profile-pic/{{ current_user_id }}" method="POST" enctype="multipart/form-data">
+	<input type="file" name="file"><br><br>
+	<input type="submit" value="Upload">
+</form>
+
+<h2>Would you like to change your password? For safety purposes, you will need to re-enter your current password</h2>
+<form action="/preferences/change-password-success" method="POST">
+	<label>Current password:</label>
+	<input type="password" name="current_password"></br>
+	<label>New password:</label>
+	<input type="password" name="new_password"></br>
+	<input type="submit">
+</form>
 
 {% if updates|length > 0 %}
 
-	<h3>Updates posted by you:</h3>
+	<h3>Most Recent Updates Posted by You:</h3>
 
 {% for update in updates %}
 
@@ -19,14 +38,7 @@
 
 {% endif %}
 
-<h2>Would you like to change your password? For safety purposes, you will need to re-enter your current password</h2>
-<form action="/preferences/change-password-success" method="POST">
-	<label>Current password:</label>
-	<input type="password" name="current_password"></br>
-	<label>New password:</label>
-	<input type="password" name="new_password"></br>
-	<input type="submit">
-</form>
 </div>
+
 {% endblock %}
 

@@ -3,8 +3,12 @@
 	<head>
 		<title>{% block title %}TITLE HERE{% endblock %}</title>
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-		<link rel="stylesheet" href="/static/base.css"
-<!-- 		link to stylesheet/bootstrap here -->
+		<link rel="stylesheet" type="text/css" href="/static/base.css">
+		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+		<script type="text/javascript" src="/static/js/noty-2.3.8/js/noty/packaged/jquery.noty.packaged.js"></script>
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans|Raleway" rel="stylesheet">
 	</head>
 	<body>
 		<nav class="navbar navbar-default navbar-fixed-top">
@@ -19,6 +23,7 @@
 					<li><a href="/compose-update"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>   Compose an Update</a></li>
 					<li><a href="/compose-message"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>   Compose a Message</a></li>
 					<li><a href="/inbox"><span class="glyphicon glyphicon-inbox" aria-hidden="true"></span>   View your Inbox</a></li>
+					<li><a href="/review-connection-requests"><span class="glyphicon glyphicon-check" aria-hidden="true"></span>   Requests </a></li>
 				{% else %}
 					<li><a href="/login"><span class="glyphicon glyphicon-log-in" aria-hidden="true"></span>   Log In</a></li> 
 					<li><a href="register">Register</a></li>
@@ -30,6 +35,7 @@
        		</div>
         	<button type="submit" class="btn btn-default">Submit</button>
       		</form>
+      		<div id="notification"></div>
 		  	</div>
 		</nav>
 		{% with messages = get_flashed_messages() %}
@@ -43,6 +49,51 @@
     {% endwith %}
 
 
-		{% block content %}BODY CONTENT HERE{% endblock %}
+		{% block content %}BODY CONTENT HERE
+
+
+		{% endblock %}
 	</body>
+	{% if "user_id" in session %}
+
+		<script>
+
+
+
+		$.get("/get-notifications-json", function(results) {
+
+			for (var i=0; i < results["results"].length; i++) {
+
+
+				if (results["results"][i][1] === "req") {
+
+					var note_id = results["results"][i][0]
+					var n = $("#notification").noty({type: "information", text: "You have a new connection request to review",
+						callback: {onClose: function() {$.post("/update-notifications-json", {"notification_id": note_id})
+							}
+						}
+					});
+				}
+				else if (results["results"][i][1] === "msg") {
+
+					var note_id = results["results"][i][0]
+					var n = $("#notification").noty({type: "information", text: "You have a new message from a connection",
+						callback: {onClose: function() {$.post("/update-notifications-json", {"notification_id": note_id})
+							}
+						}
+					});
+				}
+				else if (results["results"][i][1] === "apr") {
+
+					var n = $("#notification").noty({type: "information", text: "Your requested connection has been approved!",
+						callback: {onClose: function() {$.post("/update-notifications-json", {"notification_id": note_id})
+							}
+						}
+					});
+				}
+		}});
+	
+		</script>
+		
+	{% endif %}
 </html>

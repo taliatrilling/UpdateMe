@@ -2,23 +2,25 @@
 
 from jinja2 import StrictUndefined
 
-from flask import (Flask, render_template, redirect, request, session, flash, jsonify)
+from flask import (Flask, render_template, redirect, request, session, flash, jsonify, url_for)
 
 from flask_debugtoolbar import DebugToolbarExtension
 
-from model import User, Update, Comment, Pair, Message, Request, connect_to_db, db
+from model import User, Update, Comment, Pair, Message, Request, Notification, connect_to_db, db
 
 from datetime import datetime
 
 from passlib.hash import bcrypt
 
-from sqlalchemy import func
+from sqlalchemy import func, desc
+
+from werkzeug.utils import secure_filename
 
 import os
 
-app = Flask(__name__)
+import os.path
 
-#add change password functionality!
+app = Flask(__name__)
 
 #reminder: need to input "source secret.sh" in shell to use
 app.secret_key = os.environ["SECRET_KEY"]
@@ -27,6 +29,10 @@ app.secret_key = os.environ["SECRET_KEY"]
 app.jinja_env.undefined = StrictUndefined
 #so that app autoreloads in debug mode (specification needed because of above)
 app.jinja_env.auto_reload = True
+
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(APP_ROOT, "static/images")
+ALLOWED_EXTENSIONS = set(["jpg", "jpeg", "png"])
 
 #logic functions here:
 
@@ -50,15 +56,17 @@ def add_user(username, password, is_public):
 
 def check_user_credentials(username, password):
 	"""Checks the validity of a username and password"""
-
+	
 	user = User.query.filter(User.username == username).first()
-	password_hashed = User.validate_password(user, password)
-
-	if password_hashed:
-		user_id = user.user_id
-		username = user.username
-		return user_id
-	else:
+	if user is not None:
+		password_hashed = User.validate_password(user, password)
+		if password_hashed:
+			user_id = user.user_id
+			username = user.username
+			return user_id
+		else:
+			return False
+	else: 
 		return False
 
 def submit_update(user_id, body):
@@ -95,7 +103,7 @@ def display_comments(update_id):
 		time_date = datetime.strftime(comment.posted_at, "%-H:%M UTC on %B %-d, %Y")
 		user_comments[comment.comment_id] = {"comment on": comment.update_id,
 		"posted by": username, "posted at": time_date, 
-		"body": comment.comment_body}
+		"body": comment.comment_body, "user_id": user.user_id}
 
 	return user_comments
 
@@ -139,9 +147,9 @@ def get_message_history(pair_id, offset_num=0):
 	messages = Message.query.filter(
 		((Message.recipient_id == pair.user_1_id) | (Message.recipient_id == pair.user_2_id)), 
 		((Message.owner_id == pair.user_1_id) | (Message.owner_id == pair.user_2_id)),
-		Message.deleted == False).order_by(Message.sent_at).limit(10).offset(offset_num).all()
+		Message.deleted == False).order_by(desc(Message.sent_at)).limit(5).offset(offset_num).all()
 
-	message_history = {}
+	message_history = []
 
 	for message in messages:
 		owner = User.query.get(message.owner_id)
@@ -149,8 +157,8 @@ def get_message_history(pair_id, offset_num=0):
 		recipient = User.query.get(message.recipient_id)
 		recipient_username = recipient.username
 		time_date = datetime.strftime(message.sent_at, "%-H:%M UTC on %B %-d, %Y")
-		message_history[message.msg_id] = {"to": recipient_username, "from": owner_username,
-		"message": message.message_body, "sent at": time_date, "read": message.read}
+		message_history.append({"to": recipient_username, "from": owner_username,
+		"message": message.message_body, "sent at": time_date, "read": message.read, "msg_id": message.msg_id})
 
 	return message_history
 
@@ -291,6 +299,38 @@ def get_num_messages_between(pair_id):
 		Message.deleted == False).count()
 	return int(message_count)
 
+def allowed_file(filename):
+	"""Checks that user uploaded files are in the correct/allowed format"""
+
+	#see http://flask.pocoo.org/docs/0.11/patterns/fileuploads/
+	return "." in filename and filename.rsplit(".", 1)[1] in ALLOWED_EXTENSIONS
+
+def add_notification(user_id, notification_type):
+	"""Adds a notification to the db, which will then later be used by AJAX to display notifications to the user"""
+
+	notification = Notification(user_id=user_id, notification_type=notification_type, added_at=datetime.now())
+	db.session.add(notification)
+	db.session.commit()
+
+	return notification.notification_id
+
+def change_notification_to_viewed(notification_id):
+	"""Changes the viewed column for a specific notification to 'True' so that it will no longer alert the user"""
+
+	notification = Notification.query.get(notification_id)
+	notification.viewed = True
+	db.session.commit()
+	return notification.viewed
+
+def find_notifications_not_viewed(user_id):
+	"""For a given user, returns all current notifications in db that haven't yet been viewed"""
+
+	notifications = Notification.query.filter(Notification.user_id == user_id, Notification.viewed == False).all()
+	notification_list = []
+	for notification in notifications:
+		notification_list.append([notification.notification_id, notification.notification_type])
+	return notification_list
+
 #routes:
 
 @app.route("/")
@@ -321,7 +361,6 @@ def register_success():
 	password = request.form.get("password")
 	is_public = request.form.get("is_public")
 
-#change to 0 and 1 
 	if is_public == "1":
 		public = 1
 		user_id = add_user(username, password, 1)
@@ -491,9 +530,10 @@ def show_message(pair_id):
 			other_user = (User.query.get(other_user_id)).username
 			if user_id == pair.user_1_id or user_id == pair.user_2_id:
 				if get_num_messages_between(pair_id) > 10:
+					num_messages = get_num_messages_between(pair_id)
 					message_history = get_message_history(pair_id)
 					return render_template("specific_message_10_plus.html", message_history=message_history,
-						other_user=other_user, other_user_id=other_user_id)
+						other_user=other_user, other_user_id=other_user_id, num_messages=num_messages)
 				else:
 					message_history = get_message_history(pair_id)
 					return render_template("specific_message.html", message_history=message_history,
@@ -539,6 +579,8 @@ def submit_message():
 
 	pair = pair_lookup(user_id, recipient_id)
 
+	add_notification(recipient_id, "msg")
+
 	flash("Your message has been sent!")
 	return redirect("/message/" + str(pair))
 
@@ -556,6 +598,8 @@ def submit_reply_message():
 	submit_message_to_db(user_id, other_user_id, message_body)
 
 	pair = pair_lookup(user_id, other_user_id)
+
+	add_notification(other_user_id, "msg")
 
 	flash("Your message has been sent!")
 	return redirect("/message/" + str(pair))
@@ -587,10 +631,11 @@ def search_db():
 	"""Takes in the user's input to conduct a search of the entire database,
 	including users and updates (updates only if content is public)"""
 
-	user_input = request.args.get("search")
+	user_input = (request.args.get("search")).lower()
 
-	matching_users = User.query.filter(User.username.like("%"+user_input+"%")).all()
-	matching_updates = Update.query.filter(Update.update_body.like("%"+user_input+"%")).all()
+	matching_users = User.query.filter(func.lower(User.username).like("%"+user_input+"%")).all()
+	public_users = db.session.query(User.user_id).filter(User.is_public == True).all()
+	matching_updates = Update.query.filter(func.lower(Update.update_body).like("%"+user_input+"%"), Update.user_id.in_(public_users)).all()
 
 
 	return render_template("search_results.html", matching_users=matching_users,
@@ -603,25 +648,30 @@ def show_profile(user_id):
 
 	
 	user_of_interest = User.query.filter(User.user_id == user_id).first()
+	file_to_check = "static/images/user" + str(user_of_interest.user_id) + ".png"
 
+	if os.path.isfile(file_to_check):
+		picture_url = file_to_check
+	else:
+		picture_url = "static/images/default.png"
 	if "user_id" in session:
 		current_user_id = session["user_id"]
 		if user_of_interest.user_id == current_user_id:
 			updates = all_updates_for_specific_user(user_id)
-			return render_template("user_profile.html", updates=updates)
+			return render_template("user_profile.html", updates=updates, current_user_id=current_user_id, picture_url=picture_url)
 		elif user_of_interest.is_public: 
 			if pair_lookup(user_of_interest.user_id, current_user_id):
 				updates = all_updates_for_specific_user(user_id)
-				return render_template("public_profile_connected.html", user_of_interest=user_of_interest, updates=updates)
+				return render_template("public_profile_connected.html", user_of_interest=user_of_interest, updates=updates, picture_url=picture_url)
 			else:
 				updates = all_updates_for_specific_user(user_id)
-				return render_template("public_profile.html", user_of_interest=user_of_interest, updates=updates)
+				return render_template("public_profile.html", user_of_interest=user_of_interest, updates=updates, picture_url=picture_url)
 		else:
 			if pair_lookup(user_of_interest.user_id, current_user_id):
 				updates = all_updates_for_specific_user(user_of_interest.user_id)
-				return render_template("shared_private_profile.html", user_of_interest=user_of_interest, updates=updates)
+				return render_template("shared_private_profile.html", user_of_interest=user_of_interest, updates=updates, picture_url=picture_url)
 			else:
-				return render_template("profile_private.html", user_of_interest=user_of_interest)
+				return render_template("profile_private.html", user_of_interest=user_of_interest, picture_url=picture_url)
 	else:
 		flash("Please log in to view a user's profile")
 		return redirect ("/")
@@ -633,7 +683,7 @@ def see_connections_feed():
 	updates from connections only"""
 
 	user_id = session["user_id"]
-	offset = request.args.get("connectionoffset")
+	offset = request.args.get("offset")
 	feed_json = show_feed_connections(offset, user_id)
 	return jsonify({"results": feed_json})
 
@@ -648,6 +698,7 @@ def request_connection(other_user_id):
 		return redirect("/profile/" + str(other_user_id))
 
 	add_connection_request(current_user_id, other_user_id)
+	add_notification(other_user_id, "req")
 	flash("Your request has been sent")
 	return redirect("/profile/" + str(other_user_id))
 
@@ -672,7 +723,8 @@ def approve_request(request_id):
 	user_connecting_with_id = (Request.query.filter(Request.request_id == request_id).first()).requester_id
 	add_pair_to_db(current_user_id, user_connecting_with_id)
 	other_user_username = (User.query.get(user_connecting_with_id)).username
-	flash("You have successfully connected with" + other_user_username)
+	add_notification(user_connecting_with_id, "apr")
+	flash("You have successfully connected with " + other_user_username)
 	return redirect("/review-connection-requests")
 
 
@@ -700,15 +752,53 @@ def see_more_messages_in_hist():
 	"""For ajax uses, grabs offset and other user_id to jsonify the next messages to show"""
 
 	user_id = session["user_id"]
-	other_user_id = request.args.get("other_user_id")
+	other_user_id = request.args.get("other_id")
 	pair_id = pair_lookup(user_id, other_user_id)
 	offset = request.args.get("offset")
 	message_json = get_message_history(pair_id, offset)
 	return jsonify({"results": message_json})
 
+@app.route("/submit-profile-pic/<int:user_id>", methods=['GET', 'POST'])
+def upload_user_pic(user_id):
+	"""Uploads a user-submitted profile picrture to the static images folder"""
+	#FMI see http://flask.pocoo.org/docs/0.11/patterns/fileuploads/
+
+	user_id = session["user_id"]
+	to_name = "user" + str(user_id) + ".png"
+
+	if request.method == "POST":
+		if "file" not in request.files:
+			flash("No file part")
+			return redirect(request.url)
+		file = request.files["file"]
+		if file.filename == "":
+			flash("No selected file")
+			return redirect(request.url)
+		if file and allowed_file(file.filename):
+			filename = secure_filename(file.filename)
+			file.save(os.path.join(UPLOAD_FOLDER, to_name))
+			return redirect("/profile/" + str(user_id))
+
+@app.route("/get-notifications-json")
+def get_notifications_for_ajax():
+	"""Grabs current existing notifications in db for current user to be added via AJAX on front end"""
+
+	user_id = session["user_id"]
+	notifications = find_notifications_not_viewed(user_id)
+	return jsonify({"results": notifications})
+
+
+@app.route("/update-notifications-json", methods=["POST"])
+def update_notifications_from_ajax():
+	"""Takes from flask route/ajax info that notifcation was clicked on, subsequently updates the notification to having been viewed"""
+
+	notification_id = request.form.get("notification_id")
+	change_notification_to_viewed(notification_id)
+	return "success"
 
 if __name__ == '__main__':
-	app.debug = True
+	app.debug = False
+	app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 	connect_to_db(app)
 	DebugToolbarExtension(app)
 	app.run(host="0.0.0.0", port=5000)
