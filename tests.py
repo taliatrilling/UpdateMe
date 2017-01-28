@@ -251,7 +251,7 @@ class RouteTestCasesSession(unittest.TestCase):
 		self.assertIn("has requested to connect", result.data)
 
 	def test_approve_connection(self):
-		result = self.client.get("/approve-connection/2")
+		result = self.client.post("/approve-connection/2")
 		self.assertIsNotNone(Pair.query.filter(Pair.pair_id == 5).first())
 
 	def test_change_password_success(self):
