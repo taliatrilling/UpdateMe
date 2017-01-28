@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+
+<div class="container">
+<h1>{{ user_of_interest.username }}</h1>
+
+<img src="/{{ picture_url }}" style="height: 25%; width: 25%; object-fit: contain">
+
+<h2>You are not currently connected with {{ user_of_interest.username }}.<br>Because 
+their content is public, you may still see their updates, but you may not message them.</h2>
+<h3>You have already requested to connect with this user.</h3>
+
+{% if updates|length > 0 %}
+
+	<h3>Updates posted by {{ user_of_interest.username }}:</h3>
+
+{% for update in updates %}
+
+	<a href ="/update/{{ update.update_id }}">{{ update.update_body }}</a><br>
+	Posted at {{ update.posted_at }}<br><br>
+
+{% endfor %}
+
+{% endif %}
+</div>
+
+{% endblock %}

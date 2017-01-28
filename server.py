@@ -334,8 +334,8 @@ def find_notifications_not_viewed(user_id):
 def get_request_id(current_user_id, other_user_id):
 	"""For two given users, returns the id for their connection request"""
 
-	r_id = Request.query.filter((Request.requester_id == current_user_id) | (Request.requester_id == other_user_id),
-		(Request.requestee_id == current_user_id) | (Request.requestee_id == other_user_id)).first()
+	r_id = (Request.query.filter((Request.requester_id == current_user_id) | (Request.requester_id == other_user_id),
+		(Request.requestee_id == current_user_id) | (Request.requestee_id == other_user_id)).first()).request_id
 	return r_id
 
 #routes:
@@ -670,7 +670,13 @@ def show_profile(user_id):
 			if pair_lookup(user_of_interest.user_id, current_user_id):
 				updates = all_updates_for_specific_user(user_id)
 				return render_template("public_profile_connected.html", user_of_interest=user_of_interest, updates=updates, picture_url=picture_url)
-			#add elif for requested/requestee both
+			elif user_of_interest.username in usernames_behind_connection_requests(get_connection_requests(current_user_id)):
+				connect_id = get_request_id(current_user_id, user_of_interest.user_id)
+				updates = all_updates_for_specific_user(user_id)
+				return render_template("public_profile_requestee.html", user_of_interest=user_of_interest, picture_url=picture_url, connect_id=connect_id, updates=updates)
+			elif session["username"] in usernames_behind_connection_requests(get_connection_requests(user_of_interest.user_id)):
+				updates = all_updates_for_specific_user(user_id)
+				return render_template("public_profile_requested.html", user_of_interest=user_of_interest, picture_url=picture_url, updates=updates)
 			else:
 				updates = all_updates_for_specific_user(user_id)
 				return render_template("public_profile.html", user_of_interest=user_of_interest, updates=updates, picture_url=picture_url)
@@ -679,10 +685,10 @@ def show_profile(user_id):
 				updates = all_updates_for_specific_user(user_of_interest.user_id)
 				return render_template("shared_private_profile.html", user_of_interest=user_of_interest, updates=updates, picture_url=picture_url)
 			elif user_of_interest.username in usernames_behind_connection_requests(get_connection_requests(current_user_id)):
-				connect_id = get_request_id(current_user_id, user_of_interest)
-				return render_template("profile_private_requestee.html", user_of_interest=user_of_interest, picture_url=picture_url, connect_id=connect_id)
+				connect_id = get_request_id(current_user_id, user_of_interest.user_id)
+				return render_template("private_profile_requestee.html", user_of_interest=user_of_interest, picture_url=picture_url, connect_id=connect_id)
 			elif session["username"] in usernames_behind_connection_requests(get_connection_requests(user_of_interest.user_id)):
-				return render_template("profile_private_requester.html", user_of_interest=user_of_interest, picture_url=picture_url)
+				return render_template("private_profile_requested.html", user_of_interest=user_of_interest, picture_url=picture_url)
 			else:
 				return render_template("profile_private.html", user_of_interest=user_of_interest, picture_url=picture_url)
 	else:
@@ -727,7 +733,7 @@ def review_requests():
 	return render_template("connection_requests.html", current_requests=current_requests, usernames=usernames)
 
 
-@app.route("/approve-connection/<int:request_id>")
+@app.route("/approve-connection/<int:request_id>", methods=["POST"])
 def approve_request(request_id):
 	"""Takes in the information for a request a user has approved and calls the function to add the 
 	pair to the pairs db"""

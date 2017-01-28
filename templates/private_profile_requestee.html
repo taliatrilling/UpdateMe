@@ -11,7 +11,7 @@
 
 <h2>{{ user_of_interest.username }}'s account is private, but they have requested to connect with you:</h2>
 
-<form action="/request-connection/{{ connect_id }}" method="POST">
+<form action="/approve-connection/{{ connect_id }}" method="POST">
 	<input type="submit" value="Connect me with {{ user_of_interest.username }}!">
 
 </form>
