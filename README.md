@@ -43,3 +43,9 @@ app.secret_key = "yoursecretkeyhere"
 6. Finally, navigate your browser to http://localhost:5000/
 
 This app has been tested on a virtual machine running Ubuntu 16.04.1 LTS (GNU/Linux 4.4.0-31-generic x86_64)
+
+# About Me
+
+I am a graduate of Pitzer College as well as Hackbright Academy working in the San Francisco Bay Area as a software engineer. My unique academic background in psychology research and media studies allows me to bring a multidisciplinary perspective to any project, and I love discovering new and unique ways to interact with technology. Please feel free to reach out to me with any questions you may have about my work.<br>
+[LinkedIn](http://www.linkedin.com/in/taliatrilling)<br>
+[Personal Website](http://taliatrilling.github.io)
